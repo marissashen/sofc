@@ -99,24 +99,99 @@ def home():
         return redirect(url_for('admin'))
 
 # general route
-@app.route('/general/', methods=['POST'])
+@app.route('/general/', methods=['GET'])
 def general():
-    return render_template('general.html')
+    conn = dbconn2.connect(DSN)
 
-# treaurer route
+    if 'CAS_USERNAME' in session:
+        username = session['CAS_USERNAME']
+        treasurer = treasurer.isTreasurer(conn, username)
+        sofc = sofc.isSOFC(conn, username)
+        admin = admin.isAdmin(conn, username)
+        return render_template('general.html')
+    else:
+        return redirect(url_for('login'))
+
+# display treaurer
 @app.route('/treasurer/', methods=['GET', 'POST'])
+def displayTreasurer():
+    conn = dbconn2.connect(DSN)
+
+    if 'CAS_USERNAME' in session:
+        username = session['CAS_USERNAME']
+        treasurer = treasurer.isTreasurer(conn, username)
+        if treasurer:
+            return render_template('treasurer.html',
+                                   username=username)
+    else:
+        return redirect(url_for('login'))
+
+# treaurer routes
+@app.route('/treasurer/', methods=['POST'])
 def treasurer():
-    return render_template('treasurer.html')
+    conn = dbconn2.connect(DSN)
+
+    if 'CAS_USERNAME' in session:
+        username = session['CAS_USERNAME']
+        treasurer = treasurer.isTreasurer(conn, username)
+        if treasurer:
+
+    else:
+        return redirect(url_for('login'))
+
+# display sofc
+@app.route('/sofc/')
+def displaySOFC():
+    conn = dbconn2.connect(DSN)
+
+    if 'CAS_USERNAME' in session:
+        username = session['CAS_USERNAME']
+        sofc = sofc.isSOFC(conn, username)
+        if sofc:
+            return render_template('sofc.html',
+                                   username=username)
+    else:
+        return redirect(url_for('login'))
 
 # sofc route
-@app.route('/sofc/', methods=['GET', 'POST'])
+@app.route('/sofc/', methods=['POST'])
 def sofc():
-    return render_template('sofc.html')
+    conn = dbconn2.connect(DSN)
+
+    if 'CAS_USERNAME' in session:
+        username = session['CAS_USERNAME']
+        sofc = sofc.isSOFC(conn, username)
+        if sofc:
+
+    else:
+        return redirect(url_for('login'))
+
+# display admin
+@app.route('/admin/')
+def displayAdmin():
+    conn = dbconn2.connect(DSN)
+
+    if 'CAS_USERNAME' in session:
+        username = session['CAS_USERNAME']
+        admin = admin.isAdmin(conn, username)
+        if admin:
+            return render_template('admin.html',
+                                   username=username)
+    else:
+        return redirect(url_for('login'))
 
 # admin route
-@app.route('/admin/', methods=['GET', 'POST'])
+@app.route('/admin/', methods=['POST'])
 def admin():
-    return render_template('admin.html')
+    conn = dbconn2.connect(DSN)
+
+    if 'CAS_USERNAME' in session:
+        username = session['CAS_USERNAME']
+        admin = admin.isAdmin(conn, username)
+        if admin:
+
+    else:
+        return redirect(url_for('login'))
 
 # ------------------------------------------------------------------------------
 
