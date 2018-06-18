@@ -7,6 +7,13 @@ import treasurer, sofc, admin
 
 # ------------------------------------------------------------------------------
 
+# check if user is treasurer of any org
+def isTreasurer(conn, username):
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    curs.execute('SELECT * FROM treasurer WHERE username= %s', [username])
+    info = curs.fetchone()
+    return info is not None
+
 # check if user is treasurer of org (can create/update event & event costs)
 def isTreasurer(conn, username, orgName):
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
@@ -30,10 +37,23 @@ def dupName(conn, orgName, eventName, fundingDeadline):
     info = curs.fetchone()
     return info is not None
 
+# return all events that username is treasurer of
+def ownEvents(conn, username, fundingDeadline):
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    curs.execute('SELECT event.* \
+                  FROM   event, treasurer \
+                  WHERE  treasurer.username=%s \
+                         AND treasurer.orgName=event.orgName \
+                         AND event.fundingDeadline=%s \
+                  ORDER  BY event.orgName',
+                 [username, fundingDeadline])
+    info = curs.fetchall()
+    return info
+
 # add new event
 def addEvent(conn, username, orgName, eventName, eventDate, fundingDeadline,
              eType, students, foodReq, nonFoodReq):
-    # check if user is treaurer of org
+    # check if user is treaurer of org creating event for
     if isTreasurer(conn, username, orgName):
         curs = conn.cursor(MySQLdb.cursors.DictCursor)
 

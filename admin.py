@@ -208,8 +208,8 @@ def allocationHelperTail(conn, fundingDeadline, kind):
     # set fullyAllocated (food & non) to True for all events once out of funds
     else:
         curs.execute('UPDATE event \
-                      SET fullyAllocatedFood=TRUE, \
-                          fullyAllocatedNonFood=TRUE')
+                      SET    fullyAllocatedFood=TRUE, \
+                             fullyAllocatedNonFood=TRUE')
 
     return "All "+kind+" funds fully exhausted."
 

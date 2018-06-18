@@ -52,378 +52,71 @@ def displayHome():
 
     if 'CAS_USERNAME' in session:
         username = session['CAS_USERNAME']
+        treasurer = treasurer.isTreasurer(conn, username)
+        sofc = sofc.isSOFC(conn, username)
+        admin = admin.isAdmin(conn, username)
+        general.addUser(conn, username)
+
+        # redirect automatically to general if not treasurer, sofc, or admin
+        if not (treasurer or sofc or admin):
+            return redirect(url_for('general'))
+
+        return render_template('home.html',
+                               treasurer=treaurer,
+                               sofc=sofc,
+                               admin=admin)
+
     else:
         return redirect(url_for('login'))
 
-    general.addUser(conn, username)
-    return render_template('home.html',
-                               uName = username,
-                               opportunities=getOpps(conn),
-                               picture_exists=exists,
-                               src=src)
-
+# home routes
 @app.route('/home/', methods=['POST'])
 def home():
     conn = dbconn2.connect(DSN)
 
     if 'CAS_USERNAME' in session:
         username = session['CAS_USERNAME']
+        treasurer = treasurer.isTreasurer(conn, username)
+        sofc = sofc.isSOFC(conn, username)
+        admin = admin.isAdmin(conn, username)
     else:
         return redirect(url_for('login'))
 
-    # add new job
-    if request.form['submit'] == "Add New Job":
-        return redirect(url_for('addNewJob'))
+    # general member
+    if request.form['submit'] == "GENERAL MEMBER":
+        return redirect(url_for('general'))
 
-    # filter through all opportunities
-    if request.form['submit'] == "Filter":
-        # try & except (do not need to check something for all filters)
-        try:
-            classPref = request.form['classPref']
-        except:
-            classPref = False
-        try:
-            jobType = request.form['jobType']
-        except:
-            jobType = False
-        try:
-            jobTitle = request.form['jobTitle']
-        except:
-            jobTitle = False
-        try:
-            season = request.form['season']
-        except:
-            season = False
+    # treasurer
+    if request.form['submit'] == "TREASURER":
+        return redirect(url_for('treasurer'))
 
-        jobs = search.searchJobs(conn, classPref, jobTitle, jobType, season)
-        return render_template('home.html',
-                               uName=username,
-                               opportunities=jobs,
-                               src=src,
-                               picture_exists=exists)
+    # sofc member
+    if request.form['submit'] == "SOFC MEMBER":
+        return redirect(url_for('sofc'))
 
-@app.route('/addNewJob/', methods=['GET','POST'])
-def addNewJob():
+    # admin
+    if request.form['submit'] == "ADMIN":
+        return redirect(url_for('admin'))
 
-    conn = dbconn2.connect(DSN)
+# general route
+@app.route('/general/', methods=['POST'])
+def general():
+    return render_template('general.html')
 
-    if 'bnum' in session:
-        bnum = session['bnum']
-    if 'CAS_USERNAME' in session:
-        username = session['CAS_USERNAME']
-    else:
-        flash('Please login to view this page content')
-        return redirect(url_for('login'))
+# treaurer route
+@app.route('/treasurer/', methods=['GET', 'POST'])
+def treasurer():
+    return render_template('treasurer.html')
 
-    src,exists = getSrc(conn, bnum)
+# sofc route
+@app.route('/sofc/', methods=['GET', 'POST'])
+def sofc():
+    return render_template('sofc.html')
 
-    formErr = 'Please fill in the blank fields'
-
-    if request.method == 'GET':
-        return render_template('job_form.html',
-                               uName=username,
-                               companies=opp.allCompany(conn),
-                               picture_exists=exists,
-                               src=src)
-
-    if request.method == 'POST':
-        if request.form['submit'] == 'submit':
-            link = request.form['link']
-            classPref = request.form['classPref'] #radio button
-            jobTitle = request.form['jobTitle'] #radio button
-            jobType = request.form['jobType'] #radio button
-            positionName = request.form['positionName']
-            season = request.form['season'] #radio button
-            deadline = request.form['deadline']
-            company = request.form['companyName'] #can only add in one job
-            city = request.form['location']
-            if company == 'none':
-                company = request.form['newCompany']
-            jobID = opp.addJob(conn, bnum, company, link, classPref, jobType, jobTitle, positionName, season, deadline)
-            opp.addJobLoc(conn, bnum, jobID, city)
-            flash(city+' added for job')
-            return redirect(url_for('addJobLocation', jobID=jobID))
-
-@app.route('/addJobLocation/<jobID>', methods=['GET','POST'])
-def addJobLocation(jobID):
-
-    conn = dbconn2.connect(DSN)
-
-    if 'bnum' in session:
-        bnum = session['bnum']
-    if 'CAS_USERNAME' in session:
-        username = session['CAS_USERNAME']
-    else:
-        flash('Please login to view this page content.')
-        return redirect(url_for('login'))
-
-    src,exists = getSrc(conn, bnum)
-
-    if request.method == 'GET':
-        cities = opp.allCities(conn)
-        return render_template('jobLocation.html',
-                               jobID=jobID,
-                               cities=cities,
-                               uName=username,
-                               src=src,
-                               picture_exists=exists)
-
-    if request.method == 'POST':
-        if request.form['submit'] == 'submit':
-            cities = opp.allCities(conn)
-            if cities:
-                try:
-                    locations = request.form.getlist('city')
-                    for city in locations:
-                        flash(city+' added for job.')
-                        opp.addJobLoc(conn, bnum, jobID, city)
-                except:
-                    pass
-            newLocation = request.form[('newLocation')]
-            if newLocation: #can a user submit with an empty value
-                opp.addCity(conn, newLocation)
-                opp.addJobLoc(conn, bnum, jobID, newLocation)
-                flash('New city '+newLocation+' added for job.')
-        return redirect(url_for('home'))
-
-@app.route('/job/<jobID>', methods=['GET', 'POST'])
-def job(jobID):
-    conn = dbconn2.connect(DSN)
-
-    if 'bnum' in session:
-        bnum = session['bnum']
-    if 'CAS_USERNAME' in session:
-        username = session['CAS_USERNAME']
-    else:
-        flash('Please login to view this page content.')
-        return redirect(url_for('login'))
-
-    src,exists = getSrc(conn, bnum)
-
-    # displays job info & reviews
-
-    #checks if a job is saved
-    if checkSaved(conn,jobID) is None:
-        saved = False;
-    else:
-        saved = True;
-
-    if request.method == 'GET':
-        (job, locations, reviews) = search.findJob(conn, jobID, bnum)
-        return render_template('job.html',
-                               bnum=bnum,
-                               uName=username,
-                               job=job,
-                               locations=locations,
-                               reviews=reviews,
-                               src=src,
-                               picture_exists=exists,
-                               saved = saved)
-
-    if request.method == 'POST':
-        # if user wants to add a review for job --> redirects to review form
-        if request.form['submit'] == 'Add Job Review':
-            return redirect(url_for('addNewReview',
-                                    jobID=jobID))
-
-        # if user wants to edit their own review --> redirects to update form
-        if request.form['submit'] == 'Edit Review':
-            return redirect(url_for('editReview',
-                                    jobID=jobID))
-
-        # if user wants to delete their own review --> rerenders page
-        if request.form['submit'] == 'Delete Review':
-            deleteJobRev(conn, bnum, jobID)
-            (job, locations, reviews) = search.findJob(conn, jobID, bnum)
-            return render_template('job.html',
-                                   bnum=bnum,
-                                   uName=username,
-                                   job=job,
-                                   locations=locations,
-                                   reviews=reviews,
-                                   src=src,
-                                   picture_exists=exists,
-                                   saved = saved)
-        #user saves a job --> create a table entry with the saved job and bnum
-        if request.form['submit'] == 'Save':
-            saveJob(conn,jobID,bnum)
-            (job, locations, reviews) = search.findJob(conn, jobID, bnum)
-            return render_template('job.html',
-                                   bnum=bnum,
-                                   uName=username,
-                                   job=job,
-                                   locations=locations,
-                                   reviews=reviews,
-                                   src=src,
-                                   picture_exists=exists,
-                                   saved = True)
-
-        #user unsaves a job --> remove that entry from the saves table
-        if request.form['submit'] == 'Unsave':
-            deleteSavedJob(conn,jobID,bnum)
-            (job, locations, reviews) = search.findJob(conn, jobID, bnum)
-            return render_template('job.html',
-                                   bnum=bnum,
-                                   uName=username,
-                                   job=job,
-                                   locations=locations,
-                                   reviews=reviews,
-                                   src=src,
-                                   picture_exists=exists,
-                                   saved = False)
-
-
-
-
-@app.route('/addNewReview/<jobID>', methods=['GET','POST'])
-def addNewReview(jobID):
-
-    conn = dbconn2.connect(DSN)
-    job = getJobName(conn,jobID)
-    jobName = job['positionName']
-    if 'bnum' in session:
-        bnum = session['bnum']
-    if 'CAS_USERNAME' in session:
-        username = session['CAS_USERNAME']
-    else:
-        flash('Please login to view this page content.')
-        return redirect(url_for('login'))
-
-    src,exists = getSrc(conn, bnum)
-
-    if request.method == 'GET':
-        return render_template('review_form.html',
-                               jobName=jobName,
-                               uName=username,
-                               src=src,
-                               picture_exists=exists)
-
-    if request.method == 'POST':
-        if request.form['submit'] == 'Submit Review':
-            jobYear = request.form[('jobYear')]
-            review = request.form[('review')]
-
-            addJob = addJobRev(conn, bnum, jobID, jobYear, review)
-            if not addJob:
-                flash("A review already exists for this job and user.")
-            else:
-                flash("Review added successfully.")
-            return redirect(url_for('job', jobID=jobID))
-
-# editting a review user made
-@app.route('/editReview/<jobID>', methods=['GET','POST'])
-def editReview(jobID):
-
-    conn = dbconn2.connect(DSN)
-    job = getJobName(conn,jobID)
-    jobName = job['positionName']
-
-    if 'bnum' in session:
-        bnum = session['bnum']
-    if 'CAS_USERNAME' in session:
-        username = session['CAS_USERNAME']
-    else:
-        flash('Please login to view this page content.')
-        return redirect(url_for('login'))
-
-    src,exists = getSrc(conn, bnum)
-
-    if request.method == 'GET':
-        rev = getRev(conn, bnum, jobID)
-        if rev is None:
-            flash('You do not have a review for this job.')
-            return redirect(url_for('job', jobName=jobName))
-        return render_template('update_review.html',
-                               uName=username,
-                               jobName=jobName,
-                               jobYear=rev['jobYear'],
-                               review=rev['review'],
-                               src=src,
-                               picture_exists=exists)
-
-    if request.method == 'POST':
-        if request.form['submit'] == 'Update Review':
-            jobYear = request.form[('jobYear')]
-            review = request.form[('review')]
-
-            update = updateJobRev(conn, bnum, jobID, jobYear, review)
-            return redirect(url_for('job',jobID = jobID, jobName=jobName))
-
-
-@app.route('/profile/', methods=["GET", "POST"])
-def profile():
-
-    conn = dbconn2.connect(DSN)
-
-    if 'bnum' in session:
-        bnum = session['bnum']
-        user = getUserInfo(conn, bnum)
-        username = user['username']
-
-        src,exists = getSrc(conn, bnum)
-
-    #loading in saves
-    savedJobs = list()
-    jobs = getSavedJobs(conn,bnum)
-
-    if jobs is not None:
-        for job in jobs:
-            savedJobs.append(getJobInfo(conn,job['jobID']))
-    else:
-        savedJobs = None
-
-    if request.method == 'GET':
-        return render_template('profile.html',
-                               user=user,
-                               uName=username,
-                               src=src,
-                               picture_exists=exists,
-                               saved = savedJobs)
-    else: #upload
-        if request.form['submit'] == 'Update Picture':
-            try:
-                f = request.files['photo']
-                mime_type = imghdr.what(f.stream)
-                if mime_type != 'jpeg': # only allows JPEGs to be uploaded
-                    raise Exception('Not a JPEG')
-                filename = secure_filename(str(bnum)+'.jpeg')
-                pathname = 'images/'+filename
-                f.save(pathname)
-                flash('Upload successful.')
-                addProfPic(conn, bnum, pathname)
-                return render_template('profile.html',
-                                   bnum=bnum,
-                                   user=user,
-                                   uName=username,
-                                   src=src,
-                                   picture_exists=exists,
-                                   saved = savedJobs)
-
-            except Exception as err:
-                flash('Upload failed: {why}'.format(why=err)+".")
-                return render_template('profile.html',
-                                   bnum=bnum,
-                                   user=user,
-                                   uName=username,
-                                   src=src,
-                                   picture_exists=exists,
-                                   saved = savedJobs)
-
-        if request.form['submit'] == 'Delete Picture':
-            deleteProfPic(conn, bnum)
-            return render_template('profile.html',
-                                   bnum=bnum,
-                                   user=user,
-                                   uName=username,
-                                   src=src,
-                                   saved = savedJobs)
-
-#uploading pic route
-@app.route('/pic/<fname>')
-def pic(fname):
-    f = secure_filename(fname)
-    return send_from_directory('images',f)
-
+# admin route
+@app.route('/admin/', methods=['GET', 'POST'])
+def admin():
+    return render_template('admin.html')
 
 # ------------------------------------------------------------------------------
 

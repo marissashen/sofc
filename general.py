@@ -13,13 +13,65 @@ def addUser(conn, username):
     curs.execute('INSERT INTO user (username) VALUES %s',
                  [username])
 
-# returns all unreviewed costs & appeals
-def allUnreviewed(conn, fundingDeadline):
+# return all unreviwed costs for a cost type
+# cType must be all lowercase (same case as table name)
+def unreviewedCost(conn, fundingDeadline, cType):
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
-    curs.execute('SELECT cost.id, \
-                         cost.totalReq \
-                         cost.cType \
-                  FROM   cost, event \
-                  WHERE  cost.eventID=event.ID \
-                         AND event.deadline=%s',
+    curs.execute('SELECT cost.totalReq, \
+                         %s.* \
+                  FROM   cost, event, %s \
+                  WHERE  cost.eventID=event.id \
+                         AND cost.id=%s.id \
+                         AND event.deadline=%s \
+                         AND cost.reviewed=FALSE',
+                 [cType, cType, cType, fundingDeadline])
+    info = curs.fetchall()
+    return info
+
+# return all unreviewed costs & appeals
+def allUnreviewed(conn, fundingDeadline):
+    # costs
+    attendeeCosts = unreviewedCost(conn, fundingDeadline, "attendee")
+    foodCosts = unreviewedCost(conn, fundingDeadline, "food")
+    formulaCosts = unreviewedCost(conn, fundingDeadline, "formula")
+    honorariumCosts = unreviewedCost(conn, fundingDeadline, "honorarium")
+    supplyCosts = unreviewedCost(conn, fundingDeadline, "supply")
+
+    # appeals
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    curs.execute('SELECT appeal.* \
+                  FROM   appeal, cost, event \
+                  WHERE  cost.eventID=event.id \
+                         AND cost.id=appeal.id \
+                         AND event.deadline=%s \
+                         AND appeal.reviewed=FALSE',
                  [fundingDeadline])
+    appeals = curs.fetchall()
+
+    return (attendeeCosts, foodCosts, formulaCosts, honorariumCosts,
+           supplyCosts, appeals)
+
+# return all costs & appeals for an event
+def allCostsAppeals(conn, eventID):
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    curs.execute('SELECT * FROM cost WHERE eventID=%s ORDER BY totalReq',
+                 [eventID])
+    costsOnly = curs.fetchall()
+    curs.execute('SELECT cost.*, appeal.* \
+                  FROM   cost, appeal \
+                  WHERE  cost.eventID=appeal.eventID \
+                         AND cost.eventID=%s \
+                  ORDER  BY cost.totalReq',
+                 [eventID])
+    costsWithAppeal = curs.fetchall()
+    return (costsOnly, costsWithAppeal)
+
+# return all events (with costs & appeals) for an org
+def allEvents(conn, orgName):
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    curs.execute('SELECT cost.*\
+                  FROM event, cost, appeal \
+                  WHERE eventID=%s \
+                  ORDER BY totalReq',
+                 [eventID])
+    costsOnly = curs.fetchall()
