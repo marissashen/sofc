@@ -3,7 +3,6 @@
 import sys
 import MySQLdb
 import dbconn2
-import treasurer, sofc, admin
 
 # ------------------------------------------------------------------------------
 
@@ -15,7 +14,7 @@ def isTreasurer(conn, username):
     return info is not None
 
 # check if user is treasurer of org (can create/update event & event costs)
-def isTreasurer(conn, username, orgName):
+def isTreasurerOrg(conn, username, orgName):
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
     curs.execute('SELECT * \
                   FROM   treasurer \
@@ -54,7 +53,7 @@ def ownEvents(conn, username, fundingDeadline):
 def addEvent(conn, username, orgName, eventName, eventDate, fundingDeadline,
              eType, students, foodReq, nonFoodReq):
     # check if user is treaurer of org creating event for
-    if isTreasurer(conn, username, orgName):
+    if isTreasurerOrg(conn, username, orgName):
         curs = conn.cursor(MySQLdb.cursors.DictCursor)
 
         # check another event with same name hasn't been made already
@@ -78,7 +77,7 @@ def addEvent(conn, username, orgName, eventName, eventDate, fundingDeadline,
 
 # delete event
 def deleteEvent(conn, username, orgName, id):
-    if isTreasurer(conn, username, orgName):
+    if isTreasurerOrg(conn, username, orgName):
         curs = conn.cursor(MySQLdb.cursors.DictCursor)
         curs.execute('DELETE FROM event WHERE id=%s', [id])
         return "Event successfully deleted."
@@ -90,7 +89,7 @@ def deleteEvent(conn, username, orgName, id):
 def updateEvent(conn, username, id, orgName, eventName, eventDate,
                 fundingDeadline, eType, students, foodReq, nonFoodReq):
     # check if user is treaurer of org
-    if isTreasurer(conn, username, orgName):
+    if isTreasurerOrg(conn, username, orgName):
         curs = conn.cursor(MySQLdb.cursors.DictCursor)
 
         # check another event with same name hasn't been made already
@@ -130,25 +129,25 @@ def applyFormula(kind, input):
 
     if kind == "car":
         return input*0.54
-    else if kind == "crowd control":
+    elif kind == "crowd control":
         return min(input*50.00, 200.00)
-    else if kind == "custodial":
+    elif kind == "custodial":
         return min((input+2)*35.00, 210.00)
-    else if kind == "eboard":
+    elif kind == "eboard":
         return input*10.00
-    else if kind == "open meeting":
+    elif kind == "open meeting":
         return 25.00
-    else if kind == "programs":
+    elif kind == "programs":
         return min(input*0.10, 25.00)
-    else if kind == "publicity":
+    elif kind == "publicity":
         return min(input*0.10, 5.00)
-    else if kind == "speaker meal":
+    elif kind == "speaker meal":
         return input*15.00
 
 # add cost
 # args is a list of parameters specific for what type of cost is being added
 def addCost(conn, username, orgName, eventID, total, cType, args):
-    if isTreasurer(conn, username, orgName):
+    if isTreasurerOrg(conn, username, orgName):
         curs = conn.cursor(MySQLdb.cursors.DictCursor)
         curs.execute('START TRANSACTION')
         curs.execute('INSERT INTO cost \
@@ -186,7 +185,7 @@ def addCost(conn, username, orgName, eventID, total, cType, args):
                              [id, pdf])
                 curs.execute('COMMIT')
                 return cType+" successfully added."
-            else if cType == "Formula":
+            elif cType == "Formula":
                 kind, input, pdf = args
                 output = applyFormula(kind, input)
                 curs.execute('INSERT INTO formula \
@@ -195,7 +194,7 @@ def addCost(conn, username, orgName, eventID, total, cType, args):
                              [id, kind, input, output, pdf])
                 curs.execute('COMMIT')
                 return cType+" successfully added."
-            else if cType == "Honorarium":
+            elif cType == "Honorarium":
                 name, contract =  args
                 curs.execute('INSERT INTO honorarium \
                                           (id, name, contract) \
@@ -203,7 +202,7 @@ def addCost(conn, username, orgName, eventID, total, cType, args):
                              [id, name, contract])
                 curs.execute('COMMIT')
                 return cType+" successfully added."
-            else if cType == "Supply":
+            elif cType == "Supply":
                 pdf1, pdf2, pdf3 = args
                 curs.execute('INSERT INTO supply \
                                           (id, pdf1, pdf2, pdf3) \
@@ -221,7 +220,7 @@ def addCost(conn, username, orgName, eventID, total, cType, args):
 
 # delete cost
 def deleteCost(conn, username, orgName, id):
-    if isTreasurer(conn, username, orgName):
+    if isTreasurerOrg(conn, username, orgName):
         curs = conn.cursor(MySQLdb.cursors.DictCursor)
 
         # remove indiv cost from event total cost (food or non food)
@@ -249,7 +248,7 @@ def deleteCost(conn, username, orgName, id):
 
 # update cost
 def updateCost(conn, username, orgName, id, total, args):
-    if isTreasurer(conn, username, orgName):
+    if isTreasurerOrg(conn, username, orgName):
         curs = conn.cursor(MySQLdb.cursors.DictCursor)
         curs.execute('START TRANSACTION')
 
@@ -288,7 +287,7 @@ def updateCost(conn, username, orgName, id, total, args):
                              [pdf, id])
                 curs.execute('COMMIT')
                 return cType+" successfully updated."
-            else if cType == "Formula":
+            elif cType == "Formula":
                 kind, input, pdf = args
                 output = applyFormula(kind, input)
                 curs.execute('UPDATE formula \
@@ -300,7 +299,7 @@ def updateCost(conn, username, orgName, id, total, args):
                              [kind, input, output, pdf, id])
                 curs.execute('COMMIT')
                 return cType+" successfully updated."
-            else if cType == "Honorarium":
+            elif cType == "Honorarium":
                 name, contract =  args
                 curs.execute('UPDATE honorarium \
                               SET    name=%s, \
@@ -309,7 +308,7 @@ def updateCost(conn, username, orgName, id, total, args):
                              [name, contract, id])
                 curs.execute('COMMIT')
                 return cType+" successfully updated."
-            else if cType == "Supply":
+            elif cType == "Supply":
                 pdf1, pdf2, pdf3 = args
                 curs.execute('UPDATE supply \
                               SET    pdf1=%s, \
@@ -319,7 +318,7 @@ def updateCost(conn, username, orgName, id, total, args):
                              [pdf1, pdf2, pdf3, id])
                 curs.execute('COMMIT')
                 return cType+" successfully updated."
-            else
+            else:
                 curs.execute('ROLLBACK')
                 return "Was unable to update what you submitted."
 
@@ -329,7 +328,7 @@ def updateCost(conn, username, orgName, id, total, args):
 
 # add appeal
 def addAppeal(conn, username, orgName, id, explanation, pdf):
-    if isTreasurer(conn, username, orgName):
+    if isTreasurerOrg(conn, username, orgName):
         curs = conn.cursor(MySQLdb.cursors.DictCursor)
         curs.execute('INSERT INTO appeal \
                                   (treasurer, explanation, pdf) \
@@ -342,7 +341,7 @@ def addAppeal(conn, username, orgName, id, explanation, pdf):
 
 # delete appeal
 def deleteAppeal(conn, username, orgName, id):
-    if isTreasurer(conn, username, orgName):
+    if isTreasurerOrg(conn, username, orgName):
         curs = conn.cursor(MySQLdb.cursors.DictCursor)
         curs.execute('DELETE FROM appeal WHERE id=%s', [id])
         return "Appeal successfully deleted."
@@ -352,7 +351,7 @@ def deleteAppeal(conn, username, orgName, id):
 
 # update appeal
 def updateAppeal(conn, username, orgName, id, explanation, pdf):
-    if isTreasurer(conn, username, orgName):
+    if isTreasurerOrg(conn, username, orgName):
         curs = conn.cursor(MySQLdb.cursors.DictCursor)
         curs.execute('UPDATE appeal \
                       SET    treasurer=%s, \

@@ -3,7 +3,6 @@
 import sys
 import MySQLdb
 import dbconn2
-import general, treasurer, sofc
 
 # ------------------------------------------------------------------------------
 

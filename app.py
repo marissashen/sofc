@@ -1,4 +1,5 @@
-from flask import (Flask, render_template, make_response, url_for, request, redirect, flash, session, send_from_directory, jsonify)
+from flask import (Flask, render_template, make_response, url_for, request,
+                   redirect, flash, session, send_from_directory, jsonify)
 from werkzeug import secure_filename
 from flask_cas import CAS
 
@@ -9,7 +10,10 @@ app = Flask(__name__)
 CAS(app)
 
 import sys, random, dbconn2, datetime
-import general, treasurer, sofc, admin
+import general as G
+import treasurer as T
+import sofc as S
+import admin as A
 
 app.secret_key = ''.join([ random.choice(('ABCDEFGHIJKLMNOPQRSTUVXYZ' +
                                           'abcdefghijklmnopqrstuvxyz' +
@@ -52,17 +56,17 @@ def displayHome():
 
     if 'CAS_USERNAME' in session:
         username = session['CAS_USERNAME']
-        treasurer = treasurer.isTreasurer(conn, username)
-        sofc = sofc.isSOFC(conn, username)
-        admin = admin.isAdmin(conn, username)
-        general.addUser(conn, username)
+        G.addUser(conn, username)
+        treasurer = T.isTreasurer(conn, username)
+        sofc = S.isSOFC(conn, username)
+        admin = A.isAdmin(conn, username)
 
         # redirect automatically to general if not treasurer, sofc, or admin
         if not (treasurer or sofc or admin):
             return redirect(url_for('general'))
 
         return render_template('home.html',
-                               treasurer=treaurer,
+                               treasurer=treasurer,
                                sofc=sofc,
                                admin=admin)
 
@@ -76,9 +80,9 @@ def home():
 
     if 'CAS_USERNAME' in session:
         username = session['CAS_USERNAME']
-        treasurer = treasurer.isTreasurer(conn, username)
-        sofc = sofc.isSOFC(conn, username)
-        admin = admin.isAdmin(conn, username)
+        treasurer = T.isTreasurer(conn, username)
+        sofc = S.isSOFC(conn, username)
+        admin = A.isAdmin(conn, username)
     else:
         return redirect(url_for('login'))
 
@@ -105,9 +109,9 @@ def general():
 
     if 'CAS_USERNAME' in session:
         username = session['CAS_USERNAME']
-        treasurer = treasurer.isTreasurer(conn, username)
-        sofc = sofc.isSOFC(conn, username)
-        admin = admin.isAdmin(conn, username)
+        treasurer = T.isTreasurer(conn, username)
+        sofc = S.isSOFC(conn, username)
+        admin = A.isAdmin(conn, username)
         return render_template('general.html')
     else:
         return redirect(url_for('login'))
@@ -119,7 +123,7 @@ def displayTreasurer():
 
     if 'CAS_USERNAME' in session:
         username = session['CAS_USERNAME']
-        treasurer = treasurer.isTreasurer(conn, username)
+        treasurer = T.isTreasurer(conn, username)
         if treasurer:
             return render_template('treasurer.html',
                                    username=username)
@@ -133,9 +137,9 @@ def treasurer():
 
     if 'CAS_USERNAME' in session:
         username = session['CAS_USERNAME']
-        treasurer = treasurer.isTreasurer(conn, username)
+        treasurer = T.isTreasurer(conn, username)
         if treasurer:
-
+            pass
     else:
         return redirect(url_for('login'))
 
@@ -146,7 +150,7 @@ def displaySOFC():
 
     if 'CAS_USERNAME' in session:
         username = session['CAS_USERNAME']
-        sofc = sofc.isSOFC(conn, username)
+        sofc = S.isSOFC(conn, username)
         if sofc:
             return render_template('sofc.html',
                                    username=username)
@@ -160,9 +164,9 @@ def sofc():
 
     if 'CAS_USERNAME' in session:
         username = session['CAS_USERNAME']
-        sofc = sofc.isSOFC(conn, username)
+        sofc = S.isSOFC(conn, username)
         if sofc:
-
+            pass
     else:
         return redirect(url_for('login'))
 
@@ -173,7 +177,7 @@ def displayAdmin():
 
     if 'CAS_USERNAME' in session:
         username = session['CAS_USERNAME']
-        admin = admin.isAdmin(conn, username)
+        admin = A.isAdmin(conn, username)
         if admin:
             return render_template('admin.html',
                                    username=username)
@@ -187,9 +191,9 @@ def admin():
 
     if 'CAS_USERNAME' in session:
         username = session['CAS_USERNAME']
-        admin = admin.isAdmin(conn, username)
+        admin = A.isAdmin(conn, username)
         if admin:
-
+            pass
     else:
         return redirect(url_for('login'))
 

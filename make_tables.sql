@@ -16,15 +16,16 @@ DROP TABLE IF EXISTS user;
 
 CREATE TABLE user
 	(username VARCHAR(20) NOT NULL PRIMARY KEY,
-	 uType ENUM('general', 'sofc', 'admin') NOT NULL) ENGINE=InnoDB;
+	 uType ENUM('general', 'sofc', 'admin') NOT NULL,
+ 	 loginTimes INT NOT NULL DEFAULT 1) ENGINE=InnoDB;
 
 CREATE TABLE org
 	(name VARCHAR(100) NOT NULL PRIMARY KEY,
 	 classification ENUM('academic', 'arts/performing arts',  'career', 'CG',
 		 'class council', 'club sports', 'cultural', 'GP', 'house councils',
-		 'media/publications', 'non athletic teams', 'religious', 'social justice',
-		 'unconstituted', 'volunteer') NOT NULL,
-	 sofc INT,
+		 'media/publications', 'non athletic teams', 'political', 'religious',
+		 'social justice', 'unconstituted', 'volunteer') NOT NULL,
+	 sofc INT NOT NULL,
 	 profit INT) ENGINE=InnoDB;
 
 CREATE TABLE treasurer

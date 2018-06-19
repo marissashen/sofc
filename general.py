@@ -3,14 +3,15 @@
 import sys
 import MySQLdb
 import dbconn2
-import treasurer, sofc, admin
 
 # ------------------------------------------------------------------------------
 
 # add new user
 def addUser(conn, username):
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
-    curs.execute('INSERT INTO user (username) VALUES %s',
+    curs.execute('INSERT INTO user (username) \
+                  VALUES           (%s) \
+                  ON DUPLICATE KEY UPDATE loginTimes = loginTimes+1',
                  [username])
 
 # return all unreviwed costs for a cost type
