@@ -4,17 +4,19 @@
 
 <div class="container">
 
-  <h4>Add An Organization</h4>
+  <h4>Update {{info.name}}'s Information</h4>
   <form action="">
     <div class="form-group">
       <label for="name" required>Organization Name:</label>
       <input type="text" class="form-control" id="name"
-             placeholder="Enter org name" name="name">
+             value={{info.name}} name="name">
     </div>
 
     <div class="form-group">
       <label for="classification" required>Classification:</label>
       <select class="form-control" id="classification">
+        <option selected value={{info.classification}}> {{info.classificaion}}
+          </option>
         <option value="academic"> Academic </option>
         <option value="arts/performing arts"> Arts/Performing Arts </option>
         <option value="career"> Career </option>
@@ -37,20 +39,27 @@
     <div class="form-group">
       <label for="sofc" required>SOFC Number:</label>
       <input type="number" class="form-control" id="sofc"
-             placeholder="Enter SOFC number" name="sofc">
+             value={{info.sofc}} name="sofc">
     </div>
 
     <div class="form-group">
       <label for="profit">Profit Number:</label>
       <input type="number" class="form-control" id="profit"
-             placeholder="Enter profit number" name="profit">
+             value={{info.profit}} name="profit">
     </div>
 
-    <button type="submit" class="btn btn-primary" value="addOrg">Submit</button>
+    <div class="form-group">
+      <label for="canApply" required>Can Apply for SOFC Funds:</label>
+      <select class="form-control" id="canApply">
+        <option selected value={{info.canApply}}> {{info.canApply}} </option>
+        <option value=true> True </option>
+        <option value=false> False </option>
+      </select>
+    </div>
+
+    <button type="submit" name="submit" class="btn btn-primary" value="update">
+      Submit</button>
   </form>
-
-
-
 </div>
 
 {% endblock %}

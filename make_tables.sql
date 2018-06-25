@@ -20,13 +20,14 @@ CREATE TABLE user
  	 loginTimes INT NOT NULL DEFAULT 1) ENGINE=InnoDB;
 
 CREATE TABLE org
-	(name VARCHAR(100) NOT NULL PRIMARY KEY,
+	(name VARCHAR(100) NOT NULL,
 	 classification ENUM('academic', 'arts/performing arts',  'career', 'CG',
 		 'class council', 'club sports', 'cultural', 'GP', 'house councils',
 		 'media/publications', 'non athletic teams', 'political', 'religious',
 		 'social justice', 'unconstituted', 'volunteer') NOT NULL,
-	 sofc INT NOT NULL,
-	 profit INT) ENGINE=InnoDB;
+	 sofc INT NOT NULL PRIMARY KEY,
+	 profit INT,
+ 	 canApply BOOLEAN NOT NULL DEFAULT TRUE) ENGINE=InnoDB;
 
 CREATE TABLE treasurer
 	(orgName VARCHAR(100) NOT NULL,

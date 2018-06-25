@@ -5,18 +5,22 @@
 <div class="row justify-content-center" style="margin-top:80px">
   <div class="col-12 text-center">
 
-    <p><input type="submit" class="btn btn-lg btn-success" value="GENERAL MEMBER">
+    <p><input type="submit" name="submit" class="btn btn-lg btn-success"
+              value="GENERAL MEMBER">
 
     {% if treasurer %}
-      <p><input type="submit" class="btn btn-lg btn-success" value="TREASURER">
+      <p><input type="submit" name="submit" class="btn btn-lg btn-success"
+                value="TREASURER">
     {% endif %}
 
     {% if sofc %}
-		  <p><input type="submit" class="btn btn-lg btn-success" value="SOFC MEMBER">
+		  <p><input type="submit" name="submit" class="btn btn-lg btn-success"
+                value="SOFC MEMBER">
     {% endif %}
 
     {% if admin %}
-		  <p><input type="submit" class="btn btn-lg btn-success" value="ADMIN">
+		  <p><input type="submit" name="submit" class="btn btn-lg btn-success"
+                value="ADMIN">
     {% endif %}
 
   </div>

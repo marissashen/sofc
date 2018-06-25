@@ -10,13 +10,14 @@
       <label for="deadline" required>Funding Deadline:</label>
       <select class="form-control" id="deadline">
         {% for d in deadlineList %}
-          <option value="{{d.deadline}}"> {{d.fType}} -- {{d.deadline}} </option>
+          <option value="{{d.deadline}}"> {{d.fType}} -- {{d.deadline}}
+          </option>
         {% endfor %}
       </select>
     </div>
 
-    <button type="submit" class="btn btn-primary" value="grantDeadline">
-      Submit</button>
+    <button type="submit" name="submit" class="btn btn-primary"
+            value="grantDeadline">Submit</button>
   </form>
 
   <br/><br/>
@@ -25,6 +26,7 @@
     <div class="form-group">
       <label for="fType" required>Funding Deadline Type:</label>
       <select class="form-control" id="fType">
+        <option selected> Choose a funding deadling type </option>
         <option value="fall"> Fall </option>
         <option value="fall emergency"> Fall Emergency </option>
         <option value="uniquely compelling"> Uniquely Compelling </option>
@@ -59,8 +61,8 @@
              placeholder="Enter non food budget" name="budgetNonFood">
     </div>
 
-    <button type="submit" class="btn btn-primary" value="addDeadline">
-      Submit</button>
+    <button type="submit" name="submit" class="btn btn-primary"
+            value="addDeadline">Submit</button>
   </form>
 
   <br/><br/>
@@ -69,13 +71,16 @@
     <div class="form-group">
       <label for="deadline" required>Funding Deadline:</label>
       <select class="form-control" id="deadline">
+        <option selected> Choose a deadline </option>
         {% for d in deadlineList %}
-          <option value="{{d.deadline}}"> {{d.fType}} -- {{d.deadline}} </option>
+          <option value="{{d.deadline}}"> {{d.fType}} -- {{d.deadline}}
+          </option>
         {% endfor %}
       </select>
     </div>
 
-    <button type="submit" class="btn btn-primary" value="delete">Delete</button>
+    <button type="submit" name="submit" class="btn btn-primary" value="delete">
+      Delete</button>
   </form>
 
 </div>

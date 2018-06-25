@@ -9,6 +9,7 @@
       <div class="form-group">
         <label for="orgName" required>Organization Name:</label>
         <select class="form-control" id="orgName">
+          <option selected> Choose an org </option>
           {% for org in orgList %}
             <option value="{{org.name}}"> {{org.name}} </option>
           {% endfor %}
@@ -19,10 +20,10 @@
         <input type="text" class="form-control" id="username"
                placeholder="Enter username" name="username">
       </div>
-      <button type="submit" class="btn btn-primary" value="addTreasurer">
-        Add</button>
-      <button type="submit" class="btn btn-primary" value="removeTreasurer">
-        Remove</button>
+      <button type="submit" name="submit" class="btn btn-primary"
+              value="addTreasurer">Add</button>
+      <button type="submit" name="submit" class="btn btn-primary"
+              value="removeTreasurer">Remove</button>
     </form>
 
   <br/><br/>
@@ -33,10 +34,10 @@
       <input type="text" class="form-control" id="username"
              placeholder="Enter username" name="username">
     </div>
-    <button type="submit" class="btn btn-primary" value="addSOFC">
+    <button type="submit" name="submit" class="btn btn-primary" value="addSOFC">
       Add</button>
-    <button type="submit" class="btn btn-primary" value="removeSOFC">
-      Remove</button>
+    <button type="submit" name="submit" class="btn btn-primary"
+            value="removeSOFC">Remove</button>
   </form>
 
 </div>

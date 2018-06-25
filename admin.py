@@ -103,17 +103,28 @@ def addOrg(conn, username name, classification, sofc, profit):
     else:
         return "You are not authorized to add an org."
 
-# delete org
+# remove org's ability to apply for sofc (or delete if never applied before)
 def deleteOrg(conn, username, name):
     if isAdmin(conn, username):
         curs = conn.cursor(MySQLdb.cursors.DictCursor)
-        curs.execute('DELETE FROM org WHERE name=%s', [name])
-        return "Org "+name+" has been successfully deleted."
+        curs.execute('SELECT * FROM event WHERE orgName=%s',
+                     [name])
+        info = curs.fetchall()
+        if info is None:
+            curs.execute('DELETE FROM org WHERE name=%s',
+                         [name])
+            return "Org "+name+"has been successfully deleted."
+        curs.execute('UPDATE org \
+                      SET    canApply=FALSE \
+                      WHERE  name=%s',
+                     [name])
+        return "Org "+name+" has been successfully removed from SOFC funding."
     else:
-        return "You are not authorized to delete an org."
+        return "You are not authorized to delete or remove an org's funding."
 
 # update org
-def updateOrg(conn, username, oldName, newName, classification, sofc, profit):
+def updateOrg(conn, username, name, classification, oldSOFC, newSOFC, profit,
+              canApply):
     if isAdmin(conn, username):
         curs = conn.cursor(MySQLdb.cursors.DictCursor)
         curs.execute('UPDATE org \
@@ -121,9 +132,10 @@ def updateOrg(conn, username, oldName, newName, classification, sofc, profit):
                              classification=%s, \
                              sofc=%s \
                              profit=%s \
-                      WHERE  name=%s',
-                     [newName, classification, sofc, profit, oldName])
-        return "Org "+newName+" has been successfully updated."
+                             canApply=%s \
+                      WHERE  sofc=%s',
+                     [name, classification, newSOFC, profit, oldSOFC, canApply])
+        return "Org "+name+" has been successfully updated."
     else:
         return "You are not authorized to update org information."
 

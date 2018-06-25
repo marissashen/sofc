@@ -270,6 +270,7 @@ def adminOrgs():
     if 'CAS_USERNAME' in session:
         username = session['CAS_USERNAME']
         admin = A.isAdmin(conn, username)
+        orgList = G.allOrgs(conn)
         if admin:
             act = request.form['submit']
             if act == "addOrg":
@@ -278,11 +279,50 @@ def adminOrgs():
                 sofc = request.form['sofc']
                 profit = request.form['profit']
                 A.addOrg(conn, username, name, classification, sofc, profit)
-            if act == "":
-                pass
+            if act == "deleteOrg":
+                name = request.form['name']
+                A.deleteOrg(conn, username, name)
+            if act == "updateOrg":
+                sofc = request.form['name']
+                return redirect(url_for('displayUpdateOrg',
+                                        sofc=sofc))
             return render_template('adminOrgs.html',
                                    username=username,
                                    orgList=orgList)
+    else:
+        return redirect(url_for('login'))
+
+# admin org update display
+@app.route('/adminOrgUpdate/<sofc>')
+def displayUpdateOrg(sofc):
+    conn = dbconn2.connect(DSN)
+
+    if 'CAS_USERNAME' in session:
+        username = session['CAS_USERNAME']
+        admin = A.isAdmin(conn, username)
+        info = G.orgInfo(conn, sofc)
+        if admin:
+            return render_template('adminOrgInfo.html',
+                                   info=info)
+    else:
+        return redirect(url_for('login'))
+
+# admin org update route
+@app.route('/adminOrgUpdate/<sofc>', methods=['POST'])
+def updateOrg(sofc):
+    conn = dbconn2.connect(DSN)
+
+    if 'CAS_USERNAME' in session:
+        username = session['CAS_USERNAME']
+        admin = A.isAdmin(conn, username)
+        if admin:
+            name = request.form['name']
+            classifcation = request.form['classificaion']
+            newSOFC = request.form['sofc']
+            profit = request.form['profit']
+            A.updateOrg(conn, username, name, classification, sofc, newSOFC,
+                        profit, canApply)
+            return displayUpdateOrg(newSOFC)
     else:
         return redirect(url_for('login'))
 
