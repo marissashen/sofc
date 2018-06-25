@@ -51,6 +51,47 @@ def addSOFC(conn, username, SOFC):
     else:
         return "You are not authorized to add a SOFC member."
 
+# add new org
+def addOrg(conn, username name, classification, sofc, profit):
+    if isAdmin(conn, username):
+        curs = conn.cursor(MySQLdb.cursors.DictCursor)
+        curs.execute('INSERT INTO org \
+                                  (name, classification, sofc) \
+                      VALUES      (%s, %s, %s)',
+                     [name, classification, sofc])
+        if profit:
+            curs.execute('UPDATE org \
+                          SET    profit=%s \
+                          WHERE  name=%s',
+                         [profit, name])
+        return "Org "+name+" has been successfully added."
+    else:
+        return "You are not authorized to add an org."
+
+# delete org
+def deleteOrg(conn, username, name):
+    if isAdmin(conn, username):
+        curs = conn.cursor(MySQLdb.cursors.DictCursor)
+        curs.execute('DELETE FROM org WHERE name=%s', [name])
+        return "Org "+name+" has been successfully deleted."
+    else:
+        return "You are not authorized to delete an org."
+
+# update org
+def updateOrg(conn, username, oldName, newName, classification, sofc, profit):
+    if isAdmin(conn, username):
+        curs = conn.cursor(MySQLdb.cursors.DictCursor)
+        curs.execute('UPDATE org \
+                      SET    name=%s, \
+                             classification=%s, \
+                             sofc=%s \
+                             profit=%s \
+                      WHERE  name=%s',
+                     [newName, classification, sofc, profit, oldName])
+        return "Org "+newName+" has been successfully updated."
+    else:
+        return "You are not authorized to update org information."
+
 # return unreviewed costs
 def checkCosts(conn, fundingDeadline):
     curs = conn.cursor(MySQLdb.cursors.DictCursor)

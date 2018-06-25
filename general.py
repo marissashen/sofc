@@ -76,3 +76,10 @@ def allEvents(conn, orgName):
                   ORDER BY totalReq',
                  [eventID])
     costsOnly = curs.fetchall()
+
+# return all orgs (just their names)
+def allOrgs(conn):
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    curs.execute('SELECT name FROM org')
+    info = curs.fetchall()
+    return info

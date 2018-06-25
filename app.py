@@ -178,9 +178,11 @@ def displayAdmin():
     if 'CAS_USERNAME' in session:
         username = session['CAS_USERNAME']
         admin = A.isAdmin(conn, username)
+        orgList = G.allOrgs(conn)
         if admin:
             return render_template('admin.html',
-                                   username=username)
+                                   username=username,
+                                   orgList = orgList)
     else:
         return redirect(url_for('login'))
 
