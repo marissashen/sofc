@@ -4,17 +4,78 @@
 
 <div class="container">
 
-  <h4>Add a Funding Deadline</h4>
-    <form action="">
+  <h4>Grant Funds for Deadline</h4>
+  <form action="">
+    <div class="form-group">
+      <label for="deadline" required>Funding Deadline:</label>
+      <select class="form-control" id="deadline">
+        {% for d in deadlineList %}
+          <option value="{{d.deadline}}"> {{d.fType}} -- {{d.deadline}} </option>
+        {% endfor %}
+      </select>
+    </div>
 
-
-    </form>
+    <button type="submit" class="btn btn-primary" value="grantDeadline">
+      Submit</button>
+  </form>
 
   <br/><br/>
-  <h4>Grant Funds for a Deadline</h4>
+  <h4>Add a Funding Deadline</h4>
   <form action="">
+    <div class="form-group">
+      <label for="fType" required>Funding Deadline Type:</label>
+      <select class="form-control" id="fType">
+        <option value="fall"> Fall </option>
+        <option value="fall emergency"> Fall Emergency </option>
+        <option value="uniquely compelling"> Uniquely Compelling </option>
+        <option value="spring"> Spring </option>
+        <option value="spring emergency"> Spring Emergency </option>
+        <option value="gp review"> GP Review </option>
+        <option value="interim"> Interim </option>
+      </select>
+    </div>
 
-    
+    <div class="form-group">
+      <label for="deadline" required>Deadline:</label>
+      <input class="form-control" type="datetime-local" id="deadline"
+             name="deadline">
+    </div>
+
+    <div class="form-group">
+      <label for="appealsDeadline">Appeals Deadline:</label>
+      <input class="form-control" type="datetime-local" id="deadline"
+             name="appealsDeadline">
+    </div>
+
+    <div class="form-group">
+      <label for="budgetFood">Food Budget:</label>
+      <input type="number" class="form-control" id="budgetFood"
+             placeholder="Enter food budget" name="budgetFood">
+    </div>
+
+    <div class="form-group">
+      <label for="budgetNonFood">Non Food Budget:</label>
+      <input type="number" class="form-control" id="budgetNonFood"
+             placeholder="Enter non food budget" name="budgetNonFood">
+    </div>
+
+    <button type="submit" class="btn btn-primary" value="addDeadline">
+      Submit</button>
+  </form>
+
+  <br/><br/>
+  <h4>Delete a Funding Deadline</h4>
+  <form action="">
+    <div class="form-group">
+      <label for="deadline" required>Funding Deadline:</label>
+      <select class="form-control" id="deadline">
+        {% for d in deadlineList %}
+          <option value="{{d.deadline}}"> {{d.fType}} -- {{d.deadline}} </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <button type="submit" class="btn btn-primary" value="delete">Delete</button>
   </form>
 
 </div>

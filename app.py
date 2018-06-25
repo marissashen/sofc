@@ -294,9 +294,11 @@ def displayAdminDeadlines():
     if 'CAS_USERNAME' in session:
         username = session['CAS_USERNAME']
         admin = A.isAdmin(conn, username)
+        deadlineList = G.allDeadlines(conn)
         if admin:
             return render_template('adminDeadlines.html',
-                                   username=username)
+                                   username=username,
+                                   deadlineList=deadlineList)
     else:
         return redirect(url_for('login'))
 
@@ -309,7 +311,25 @@ def adminDeadlines():
         username = session['CAS_USERNAME']
         admin = A.isAdmin(conn, username)
         if admin:
-            pass
+            act = request.form['submit']
+            if act == "grantDeadline":
+                deadline = request.form['deadline']
+                A.calcAllocated(conn, deadline)
+            if act == "addDeadline":
+                fType = request.form['fType']
+                deadline = request.form['deadline']
+                appealsDeadline = request.form['appealsDeadline']
+                budgetFood = request.form['budgetFood']
+                budgetNonFood = request.form['budgetNonFood']
+                A.addDeadline(conn, username, deadline, fType, budgetFood,
+                              budgetNonFood)
+            if act == "delete":
+                deadline = request.form['deadline']
+                A.deleteDeadline(conn, username, deadline)
+            deadlineList = G.allDeadlines(conn)
+            return render_template('adminDeadlines.html',
+                                   username=username,
+                                   deadlineList=deadlineList)
     else:
         return redirect(url_for('login'))
 # ------------------------------------------------------------------------------

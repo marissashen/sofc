@@ -25,6 +25,16 @@ def addDeadline(conn, username, deadline, fType, budgetFood, budgetNonFood):
     else:
         return "You are not authorized to create a funding deadline."
 
+# delete funding deadline
+def deleteDeadline(conn, username, deadline):
+    if isAdmin(conn, username):
+        curs = conn.cursor(MySQLdb.cursors.DictCursor)
+        curs.execute('DELETE FROM funding WHERE deadline=%s',
+                     [deadline])
+        return "Deadline has been successfully deleted."
+    else:
+        return "You are not authorized to delete a funding deadline."
+
 # add user as a treasurer
 def addTreasurer(conn, username, orgName, treasurer):
     if isAdmin(conn, username):
@@ -281,6 +291,7 @@ def allocationHelperTail(conn, fundingDeadline, kind):
 # calculate allocated money for all events
 def calcAllocated(conn, fundingDeadline):
     if allReviewed(conn, fundingDeadline):
+        calcGranted(conn, fundingDeadline)
         curs = conn.cursor(MySQLdb.cursors.DictCursor)
 
         # automatically cut all events that were granted < 40% requested

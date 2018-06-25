@@ -83,3 +83,10 @@ def allOrgs(conn):
     curs.execute('SELECT name FROM org')
     info = curs.fetchall()
     return info
+
+# return all funding deadlines (dates & type)
+def allDeadlines(conn):
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    curs.execute('SELECT deadline, fType FROM funding')
+    info = curs.fetchall()
+    return info
