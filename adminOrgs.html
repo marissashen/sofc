@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container">
+
+  <h4>Add An Organization</h4>
+  <form action="">
+    <div class="form-group">
+      <label for="name" required>Organization Name:</label>
+      <input type="name" class="form-control" id="name"
+             placeholder="Enter org name" name="name">
+    </div>
+    <div class="form-group">
+      <label for="sofc" required>SOFC Number:</label>
+      <input type="sofc" class="form-control" id="sofc"
+             placeholder="Enter SOFC number" name="sofc">
+    </div>
+    <div class="form-group">
+      <label for="profit">Profit Number:</label>
+      <input type="profit" class="form-control" id="profit"
+             placeholder="Enter profit number" name="profit">
+    </div>
+    <div class="form-group">
+      <label for="classification" required>Classification:</label>
+      <select class="form-control" id="classification">
+        <option value="academic"> Academic </option>
+        <option value="arts/performing arts"> Arts/Performing Arts </option>
+        <option value="career"> Career </option>
+        <option value="CG"> CG </option>
+        <option value="class council"> Class Council </option>
+        <option value="club sports"> Club Sports </option>
+        <option value="cultural"> Cultural </option>
+        <option value="GP"> GP </option>
+        <option value="house councils"> House Councils </option>
+        <option value="media/publications"> Media/Publications </option>
+        <option value="non athletic teams"> Non Athletic Teams </option>
+        <option value="political"> Political </option>
+        <option value="religious"> Religious </option>
+        <option value="social justice"> Social Justice </option>
+        <option value="unconstituted"> Unconstituted </option>
+        <option value="volunteer"> Volunteer </option>
+      </select>
+    </div>
+    <button type="submit" class="btn btn-primary" value="org">Submit</button>
+  </form>
+
+
+</div>
+
+{% endblock %}

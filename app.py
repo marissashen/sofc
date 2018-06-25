@@ -178,11 +178,9 @@ def displayAdmin():
     if 'CAS_USERNAME' in session:
         username = session['CAS_USERNAME']
         admin = A.isAdmin(conn, username)
-        orgList = G.allOrgs(conn)
         if admin:
             return render_template('admin.html',
-                                   username=username,
-                                   orgList = orgList)
+                                   username=username)
     else:
         return redirect(url_for('login'))
 
@@ -195,7 +193,17 @@ def admin():
         username = session['CAS_USERNAME']
         admin = A.isAdmin(conn, username)
         if admin:
-            pass
+            html = request.form['submit']
+            if html == "USERS":
+                return render_template('adminUsers.html',
+                                       username=username)
+            if html == "ORGS":
+                orgList = G.allOrgs(conn)
+                return render_template('adminOrgs.html',
+                                       username=username,
+                                       orgList=orgList)
+            if html == "FUNDING DEADLINES":
+                pass
     else:
         return redirect(url_for('login'))
 

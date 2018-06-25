@@ -38,6 +38,19 @@ def addTreasurer(conn, username, orgName, treasurer):
     else:
         return "You are not authorized to add a treasurer."
 
+# delete user as a treasurer
+def deleteTreasurer(conn, username, orgName, treasurer):
+    if isAdmin(conn, username):
+        curs = conn.cursor(MySQLdb.cursors.DictCursor)
+        curs.execute('DELETE FROM treasurer \
+                      WHERE       orgName=%s, \
+                                  username=%s',
+                     [orgName, treasurer])
+        return "Treasurer "+treasurer+" for "+orgName+" has been successfully \
+               deleted."
+    else:
+        return "You are not authorized to delete a treasurer."
+
 # add user as a SOFC member
 def addSOFC(conn, username, SOFC):
     if isAdmin(conn, username):
@@ -50,6 +63,18 @@ def addSOFC(conn, username, SOFC):
         return "SOFC member "+SOFC+" has been successfully added."
     else:
         return "You are not authorized to add a SOFC member."
+
+# delete user as a SOFC member
+def deleteSOFC(conn, username, SOFC):
+    if isAdmin(conn, username):
+        curs = conn.cursor(MySQLdb.cursors.DictCursor)
+        curs.execute('UPDATE user \
+                      SET    uType=1 \
+                      WHERE  username=%s',
+                     [SOFC])
+        return "SOFC member "+SOFC+" has been successfully deleted."
+    else:
+        return "You are not authorized to delete a SOFC member."
 
 # add new org
 def addOrg(conn, username name, classification, sofc, profit):
