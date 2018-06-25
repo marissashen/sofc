@@ -195,18 +195,123 @@ def admin():
         if admin:
             html = request.form['submit']
             if html == "USERS":
-                return render_template('adminUsers.html',
-                                       username=username)
+                return redirect(url_for('adminUsers'))
             if html == "ORGS":
-                orgList = G.allOrgs(conn)
-                return render_template('adminOrgs.html',
-                                       username=username,
-                                       orgList=orgList)
+                return redirect(url_for('adminOrgs'))
             if html == "FUNDING DEADLINES":
-                pass
+                return redirect(url_for('adminDeadlines'))
     else:
         return redirect(url_for('login'))
 
+# admin users display
+@app.route('/adminUsers/')
+def displayAdminUser():
+    conn = dbconn2.connect(DSN)
+
+    if 'CAS_USERNAME' in session:
+        username = session['CAS_USERNAME']
+        admin = A.isAdmin(conn, username)
+        if admin:
+            return render_template('adminUsers.html',
+                                   username=username)
+    else:
+        return redirect(url_for('login'))
+
+# admin users route
+@app.route('/adminUsers/', methods=['POST'])
+def adminUser():
+    conn = dbconn2.connect(DSN)
+
+    if 'CAS_USERNAME' in session:
+        username = session['CAS_USERNAME']
+        admin = A.isAdmin(conn, username)
+        if admin:
+            act = request.form['submit']
+            if act == "addTreasure":
+                orgName = request.form['orgName']
+                treasurer = request.form['username']
+                A.addTreasurer(conn, username, orgName, treasurer)
+            if act == "removeTreasurer":
+                orgName = request.form['orgName']
+                treasurer = request.form['username']
+                A.deleteTreasurer(conn, username, orgName, treasurer)
+            if act == "addSOFC":
+                SOFC = request.form['username']
+                A.addSOFC(conn, username, SOFC)
+            if act == "removeSOFC":
+                SOFC = request.form['username']
+                A.deleteSOFC(conn, username, SOFC)
+            return render_template('adminUsers.html',
+                                   username=username)
+    else:
+        return redirect(url_for('login'))
+
+# admin orgs display
+@app.route('/adminOrgs/')
+def displayAdminOrgs():
+    conn = dbconn2.connect(DSN)
+
+    if 'CAS_USERNAME' in session:
+        username = session['CAS_USERNAME']
+        admin = A.isAdmin(conn, username)
+        orgList = G.allOrgs(conn)
+        if admin:
+            return render_template('adminOrgs.html',
+                                   username=username,
+                                   orgList=orgList)
+    else:
+        return redirect(url_for('login'))
+
+# admin orgs route
+@app.route('/adminOrgs/', methods=['POST'])
+def adminOrgs():
+    conn = dbconn2.connect(DSN)
+
+    if 'CAS_USERNAME' in session:
+        username = session['CAS_USERNAME']
+        admin = A.isAdmin(conn, username)
+        if admin:
+            act = request.form['submit']
+            if act == "addOrg":
+                name = request.form['name']
+                classification = request.form['classification']
+                sofc = request.form['sofc']
+                profit = request.form['profit']
+                A.addOrg(conn, username, name, classification, sofc, profit)
+            if act == "":
+                pass
+            return render_template('adminOrgs.html',
+                                   username=username,
+                                   orgList=orgList)
+    else:
+        return redirect(url_for('login'))
+
+# admin users display
+@app.route('/adminDeadlines/')
+def displayAdminDeadlines():
+    conn = dbconn2.connect(DSN)
+
+    if 'CAS_USERNAME' in session:
+        username = session['CAS_USERNAME']
+        admin = A.isAdmin(conn, username)
+        if admin:
+            return render_template('adminDeadlines.html',
+                                   username=username)
+    else:
+        return redirect(url_for('login'))
+
+# admin users route
+@app.route('/adminDeadlines/', methods=['POST'])
+def adminDeadlines():
+    conn = dbconn2.connect(DSN)
+
+    if 'CAS_USERNAME' in session:
+        username = session['CAS_USERNAME']
+        admin = A.isAdmin(conn, username)
+        if admin:
+            pass
+    else:
+        return redirect(url_for('login'))
 # ------------------------------------------------------------------------------
 
 if __name__ == '__main__':
