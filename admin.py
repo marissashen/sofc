@@ -111,26 +111,37 @@ def deleteOrg(conn, name):
     return "Org "+name+" has been successfully removed from SOFC funding."
 
 # update org
-def updateOrg(conn, oldName, newName, classification, sofc, profit,
+def updateOrg(conn, oldName, newName, classification, oldSOFC, newSOFC, profit,
               canApply):
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
-    curs.execute('SELECT COUNT(*) FROM org WHERE sofc=%s',
-                 [sofc])
-    info = curs.fetchone()
-    nums = info['COUNT(*)']
-    if nums>0:
-        return "SOFC number "+sofc+" already belongs to another org."
-    curs.execute('UPDATE org \
-                  SET    name=%s, \
-                         classification=%s, \
-                         sofc=%s \
-                         canApply=%s \
-                  WHERE  name=%s',
-                 [newName, classification, sofc, oldName, canApply])
-    if profit:
-        curs.execute('UPDATE org SET profit=%s WHERE name=%s',
-                     [profit, newName])
-    return "Org "+name+" has been successfully updated."
+    if oldSOFC!=newSOFC:
+        curs.execute('SELECT COUNT(*) FROM org WHERE sofc=%s',
+                     [newSOFC])
+        info = curs.fetchone()
+        nums = info['COUNT(*)']
+        if nums>0:
+            return "SOFC number "+newSOFC+" already belongs to another org."
+    else:
+        curs.execute('UPDATE org \
+                      SET    name=%s, \
+                             classification=%s, \
+                             sofc=%s \
+                      WHERE  name=%s',
+                     [newName, classification, newSOFC, oldName])
+        if canApply:
+            curs.execute('UPDATE org \
+                          SET    canApply=TRUE \
+                          WHERE  name=%s',
+                         [newName])
+        else:
+            curs.execute('UPDATE org \
+                          SET    canApply=FALSE \
+                          WHERE  name=%s',
+                         [newName])
+        if profit:
+            curs.execute('UPDATE org SET profit=%s WHERE name=%s',
+                         [profit, newName])
+        return "Org "+newName+" has been successfully updated."
 
 # get name of org given sofc num (also unique)
 def orgName(conn, sofc):

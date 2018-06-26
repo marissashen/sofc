@@ -205,11 +205,11 @@ def displayAdminUsers():
     if 'CAS_USERNAME' in session:
         username = session['CAS_USERNAME']
         admin = A.isAdmin(conn, username)
-        orgList = G.allOrgs(conn)
+        sofcOrgList = G.allSOFCOrgs(conn)
         if admin:
             return render_template('adminUsers.html',
                                    username=username,
-                                   orgList=orgList)
+                                   sofcOrgList=sofcOrgList)
     else:
         return redirect(url_for('login'))
 
@@ -249,10 +249,12 @@ def displayAdminOrgs():
     if 'CAS_USERNAME' in session:
         username = session['CAS_USERNAME']
         admin = A.isAdmin(conn, username)
+        sofcOrgList = G.allSOFCOrgs(conn)
         orgList = G.allOrgs(conn)
         if admin:
             return render_template('adminOrgs.html',
                                    username=username,
+                                   sofcOrgList=sofcOrgList,
                                    orgList=orgList)
     else:
         return redirect(url_for('login'))
@@ -294,9 +296,14 @@ def displayUpdateOrg(sofc):
         username = session['CAS_USERNAME']
         admin = A.isAdmin(conn, username)
         info = G.orgInfo(conn, sofc)
+        if info['canApply']==0:
+            canApply = False
+        else:
+            canApply = True
         if admin:
             return render_template('adminOrgInfo.html',
-                                   info=info)
+                                   info=info,
+                                   canApply=canApply)
     else:
         return redirect(url_for('login'))
 
@@ -312,11 +319,11 @@ def updateOrg(sofc):
         if admin:
             newName = request.form['name']
             classification = request.form['classification']
-            sofc = request.form['sofc']
+            newSOFC = request.form['sofc']
             profit = request.form['profit']
-            canApply = request.form['canApply']
-            A.updateOrg(conn, oldName, newName, classification, sofc, profit,
-                        canApply)
+            canApply = int(request.form['canApply'])
+            A.updateOrg(conn, oldName, newName, classification, sofc, newSOFC,
+                        profit, canApply)
             return displayUpdateOrg(sofc)
     else:
         return redirect(url_for('login'))

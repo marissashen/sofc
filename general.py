@@ -77,10 +77,17 @@ def allEvents(conn, orgName):
                  [eventID])
     costsOnly = curs.fetchall()
 
-# return all orgs that can apply for sofc funds (just their names)
-def allOrgs(conn):
+# return all orgs that can apply for sofc funds (names & sofc num)
+def allSOFCOrgs(conn):
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
     curs.execute('SELECT name, sofc FROM org WHERE canApply=TRUE')
+    info = curs.fetchall()
+    return info
+
+# return all orgs (names & sofc num)
+def allOrgs(conn):
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    curs.execute('SELECT name, sofc FROM org')
     info = curs.fetchall()
     return info
 
