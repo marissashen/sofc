@@ -8,14 +8,14 @@
   <form method="POST" action="">
     <div class="form-group">
       <label for="name" required>Organization Name:</label>
-      <input type="text" class="form-control" id="name"
-             value={{info.name}} name="name">
+      <input type="text" class="form-control" id="name" value="{{info.name}}"
+             name="name">
     </div>
 
     <div class="form-group">
       <label for="classification" required>Classification:</label>
       <select class="form-control" name="classification" id="classification">
-        <option selected value={{info.classification}}> {{info.classificaion}}
+        <option selected value="{{info.classification}}"> {{info.classification}}
           </option>
         <option value="academic"> Academic </option>
         <option value="arts/performing arts"> Arts/Performing Arts </option>
@@ -38,8 +38,8 @@
 
     <div class="form-group">
       <label for="sofc" required>SOFC Number:</label>
-      <input type="number" class="form-control" id="sofc"
-             value={{info.sofc}} name="sofc">
+      <input type="number" class="form-control" id="sofc" value={{info.sofc}}
+             name="sofc">
     </div>
 
     <div class="form-group">

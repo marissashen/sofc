@@ -96,5 +96,5 @@ def orgInfo(conn, sofc):
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
     curs.execute('SELECT * FROM org WHERE sofc=%s',
                  [sofc])
-    info = curs.fetchall()
+    info = curs.fetchone()
     return info

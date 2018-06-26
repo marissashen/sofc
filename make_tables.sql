@@ -21,7 +21,7 @@ CREATE TABLE user
 
 CREATE TABLE org
 	(name VARCHAR(100) NOT NULL PRIMARY KEY,
-	 classification ENUM('academic', 'arts/performing arts',  'career', 'CG',
+	 classification ENUM('academic', 'arts/performing arts', 'career', 'CG',
 		 'class council', 'club sports', 'cultural', 'GP', 'house councils',
 		 'media/publications', 'non athletic teams', 'political', 'religious',
 		 'social justice', 'unconstituted', 'volunteer') NOT NULL,

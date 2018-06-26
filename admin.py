@@ -99,7 +99,7 @@ def deleteOrg(conn, name):
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
     curs.execute('SELECT * FROM event WHERE orgName=%s',
                  [name])
-    info = curs.fetchall()
+    info = curs.fetchone()
     if info is None:
         curs.execute('DELETE FROM org WHERE name=%s',
                      [name])
@@ -140,6 +140,15 @@ def orgName(conn, sofc):
     info = curs.fetchone()
     name = info['name']
     return name
+
+# get sofc num of org given name
+def orgSOFC(conn, name):
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    curs.execute('SELECT sofc FROM org WHERE name=%s',
+                 [name])
+    info = curs.fetchone()
+    sofc = info['sofc']
+    return sofc
 
 # return unreviewed costs
 def checkCosts(conn, fundingDeadline):

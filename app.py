@@ -87,7 +87,6 @@ def home():
         return redirect(url_for('login'))
 
     role = request.form['submit']
-    print role
     if role == "GENERAL MEMBER":
         return redirect(url_for('general'))
     if role == "TREASURER":
@@ -269,27 +268,25 @@ def adminOrgs():
         orgList = G.allOrgs(conn)
         if admin:
             act = request.form['submit']
-            if act == "addOrg":
+            if act == "add":
                 name = request.form['name']
                 classification = request.form['classification']
                 sofc = request.form['sofc']
                 profit = request.form['profit']
                 A.addOrg(conn, name, classification, sofc, profit)
-            if act == "deleteOrg":
+            if act == "delete":
                 name = request.form['name']
                 A.deleteOrg(conn, name)
-            if act == "updateOrg":
+            if act == "update":
                 sofc = request.form['name']
                 return redirect(url_for('displayUpdateOrg',
                                         sofc=sofc))
-            return render_template('adminOrgs.html',
-                                   username=username,
-                                   orgList=orgList)
+            return displayAdminOrgs()
     else:
         return redirect(url_for('login'))
 
 # admin org update display
-@app.route('/adminOrgUpdate/<sofc>')
+@app.route('/adminUpdateOrg/<sofc>')
 def displayUpdateOrg(sofc):
     conn = dbconn2.connect(DSN)
 
@@ -304,7 +301,7 @@ def displayUpdateOrg(sofc):
         return redirect(url_for('login'))
 
 # admin org update route
-@app.route('/adminOrgUpdate/<sofc>', methods=['POST'])
+@app.route('/adminUpdateOrg/<sofc>', methods=['POST'])
 def updateOrg(sofc):
     conn = dbconn2.connect(DSN)
 
@@ -314,12 +311,13 @@ def updateOrg(sofc):
         oldName = A.orgName(conn, sofc)
         if admin:
             newName = request.form['name']
-            classifcation = request.form['classificaion']
+            classification = request.form['classification']
             sofc = request.form['sofc']
             profit = request.form['profit']
+            canApply = request.form['canApply']
             A.updateOrg(conn, oldName, newName, classification, sofc, profit,
                         canApply)
-            return displayUpdateOrg(newSOFC)
+            return displayUpdateOrg(sofc)
     else:
         return redirect(url_for('login'))
 
