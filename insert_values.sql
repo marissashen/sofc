@@ -4,14 +4,14 @@ USE mshen4_db;
 INSERT INTO user
             (username, uType)
 VALUES      ("studentbursar", "admin"),
-            ("bursarsoffice", "admin");
+            ("bursarsoffice", "admin"),
+            ("mshen4", "admin"),
+            ("gscorpin", "admin");
 
 -- 2018-2019 bookies --
 INSERT INTO user
             (username, uType)
-VALUES      ("mshen4", "sofc"),
-            ("gscorpin", "sofc"),
-            ("hshao", "sofc"),
+VALUES      ("hshao", "sofc"),
             ("mcarter5", "sofc"),
             ("mneberai", "sofc"),
             ("mmiao2", "sofc"),

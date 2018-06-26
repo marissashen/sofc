@@ -2,13 +2,13 @@
 
 {% block content %}
 
-<div class="container">
+<div class="container" style="margin-top:80px">
 
   <h4>Grant Funds for Deadline</h4>
-  <form action="">
+  <form method="POST" action="">
     <div class="form-group">
       <label for="deadline" required>Funding Deadline:</label>
-      <select class="form-control" id="deadline">
+      <select class="form-control" name="deadline" id="deadline">
         {% for d in deadlineList %}
           <option value="{{d.deadline}}"> {{d.fType}} -- {{d.deadline}}
           </option>
@@ -22,10 +22,10 @@
 
   <br/><br/>
   <h4>Add a Funding Deadline</h4>
-  <form action="">
+  <form method="POST" action="">
     <div class="form-group">
       <label for="fType" required>Funding Deadline Type:</label>
-      <select class="form-control" id="fType">
+      <select class="form-control" name="fType" id="fType">
         <option selected> Choose a funding deadling type </option>
         <option value="fall"> Fall </option>
         <option value="fall emergency"> Fall Emergency </option>
@@ -67,10 +67,10 @@
 
   <br/><br/>
   <h4>Delete a Funding Deadline</h4>
-  <form action="">
+  <form method="POST" action="">
     <div class="form-group">
       <label for="deadline" required>Funding Deadline:</label>
-      <select class="form-control" id="deadline">
+      <select class="form-control" name="deadline" id="deadline">
         <option selected> Choose a deadline </option>
         {% for d in deadlineList %}
           <option value="{{d.deadline}}"> {{d.fType}} -- {{d.deadline}}

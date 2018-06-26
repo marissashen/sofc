@@ -2,10 +2,10 @@
 
 {% block content %}
 
-<div class="container">
+<div class="container" style="margin-top:80px">
 
   <h4>Update {{info.name}}'s Information</h4>
-  <form action="">
+  <form method="POST" action="">
     <div class="form-group">
       <label for="name" required>Organization Name:</label>
       <input type="text" class="form-control" id="name"
@@ -14,7 +14,7 @@
 
     <div class="form-group">
       <label for="classification" required>Classification:</label>
-      <select class="form-control" id="classification">
+      <select class="form-control" name="classification" id="classification">
         <option selected value={{info.classification}}> {{info.classificaion}}
           </option>
         <option value="academic"> Academic </option>
@@ -50,7 +50,7 @@
 
     <div class="form-group">
       <label for="canApply" required>Can Apply for SOFC Funds:</label>
-      <select class="form-control" id="canApply">
+      <select class="form-control" name="canApply" id="canApply">
         <option selected value={{info.canApply}}> {{info.canApply}} </option>
         <option value=true> True </option>
         <option value=false> False </option>

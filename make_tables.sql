@@ -20,12 +20,12 @@ CREATE TABLE user
  	 loginTimes INT NOT NULL DEFAULT 1) ENGINE=InnoDB;
 
 CREATE TABLE org
-	(name VARCHAR(100) NOT NULL,
+	(name VARCHAR(100) NOT NULL PRIMARY KEY,
 	 classification ENUM('academic', 'arts/performing arts',  'career', 'CG',
 		 'class council', 'club sports', 'cultural', 'GP', 'house councils',
 		 'media/publications', 'non athletic teams', 'political', 'religious',
 		 'social justice', 'unconstituted', 'volunteer') NOT NULL,
-	 sofc INT NOT NULL PRIMARY KEY,
+	 sofc INT NOT NULL,
 	 profit INT,
  	 canApply BOOLEAN NOT NULL DEFAULT TRUE) ENGINE=InnoDB;
 
@@ -33,7 +33,8 @@ CREATE TABLE treasurer
 	(orgName VARCHAR(100) NOT NULL,
 	 username VARCHAR(20) NOT NULL,
  	 FOREIGN KEY (orgName) REFERENCES org(name) ON DELETE CASCADE,
- 	 FOREIGN KEY (username) REFERENCES user(username) ON DELETE CASCADE) ENGINE=InnoDB;
+ 	 FOREIGN KEY (username) REFERENCES user(username) ON DELETE CASCADE,
+   PRIMARY KEY (orgName, username)) ENGINE=InnoDB;
 
 CREATE TABLE funding
 	(deadline DATETIME NOT NULL PRIMARY KEY,

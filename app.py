@@ -86,24 +86,19 @@ def home():
     else:
         return redirect(url_for('login'))
 
-    # general member
-    if request.form['submit'] == "GENERAL MEMBER":
+    role = request.form['submit']
+    print role
+    if role == "GENERAL MEMBER":
         return redirect(url_for('general'))
-
-    # treasurer
-    if request.form['submit'] == "TREASURER":
+    if role == "TREASURER":
         return redirect(url_for('treasurer'))
-
-    # sofc member
-    if request.form['submit'] == "SOFC MEMBER":
+    if role == "SOFC MEMBER":
         return redirect(url_for('sofc'))
-
-    # admin
-    if request.form['submit'] == "ADMIN":
+    if role == "ADMIN":
         return redirect(url_for('admin'))
 
 # general route
-@app.route('/general/', methods=['GET'])
+@app.route('/general/')
 def general():
     conn = dbconn2.connect(DSN)
 
@@ -205,21 +200,23 @@ def admin():
 
 # admin users display
 @app.route('/adminUsers/')
-def displayAdminUser():
+def displayAdminUsers():
     conn = dbconn2.connect(DSN)
 
     if 'CAS_USERNAME' in session:
         username = session['CAS_USERNAME']
         admin = A.isAdmin(conn, username)
+        orgList = G.allOrgs(conn)
         if admin:
             return render_template('adminUsers.html',
-                                   username=username)
+                                   username=username,
+                                   orgList=orgList)
     else:
         return redirect(url_for('login'))
 
 # admin users route
 @app.route('/adminUsers/', methods=['POST'])
-def adminUser():
+def adminUsers():
     conn = dbconn2.connect(DSN)
 
     if 'CAS_USERNAME' in session:
@@ -227,22 +224,21 @@ def adminUser():
         admin = A.isAdmin(conn, username)
         if admin:
             act = request.form['submit']
-            if act == "addTreasure":
+            if act == "addTreasurer":
                 orgName = request.form['orgName']
                 treasurer = request.form['username']
-                A.addTreasurer(conn, username, orgName, treasurer)
+                A.addTreasurer(conn, orgName, treasurer)
             if act == "removeTreasurer":
                 orgName = request.form['orgName']
                 treasurer = request.form['username']
-                A.deleteTreasurer(conn, username, orgName, treasurer)
+                A.deleteTreasurer(conn, orgName, treasurer)
             if act == "addSOFC":
                 SOFC = request.form['username']
-                A.addSOFC(conn, username, SOFC)
+                A.addSOFC(conn, SOFC)
             if act == "removeSOFC":
                 SOFC = request.form['username']
-                A.deleteSOFC(conn, username, SOFC)
-            return render_template('adminUsers.html',
-                                   username=username)
+                A.deleteSOFC(conn, SOFC)
+            return displayAdminUsers()
     else:
         return redirect(url_for('login'))
 
@@ -278,10 +274,10 @@ def adminOrgs():
                 classification = request.form['classification']
                 sofc = request.form['sofc']
                 profit = request.form['profit']
-                A.addOrg(conn, username, name, classification, sofc, profit)
+                A.addOrg(conn, name, classification, sofc, profit)
             if act == "deleteOrg":
                 name = request.form['name']
-                A.deleteOrg(conn, username, name)
+                A.deleteOrg(conn, name)
             if act == "updateOrg":
                 sofc = request.form['name']
                 return redirect(url_for('displayUpdateOrg',
@@ -315,13 +311,14 @@ def updateOrg(sofc):
     if 'CAS_USERNAME' in session:
         username = session['CAS_USERNAME']
         admin = A.isAdmin(conn, username)
+        oldName = A.orgName(conn, sofc)
         if admin:
-            name = request.form['name']
+            newName = request.form['name']
             classifcation = request.form['classificaion']
-            newSOFC = request.form['sofc']
+            sofc = request.form['sofc']
             profit = request.form['profit']
-            A.updateOrg(conn, username, name, classification, sofc, newSOFC,
-                        profit, canApply)
+            A.updateOrg(conn, oldName, newName, classification, sofc, profit,
+                        canApply)
             return displayUpdateOrg(newSOFC)
     else:
         return redirect(url_for('login'))
@@ -361,11 +358,11 @@ def adminDeadlines():
                 appealsDeadline = request.form['appealsDeadline']
                 budgetFood = request.form['budgetFood']
                 budgetNonFood = request.form['budgetNonFood']
-                A.addDeadline(conn, username, deadline, fType, budgetFood,
+                A.addDeadline(conn, deadline, fType, budgetFood,
                               budgetNonFood)
             if act == "delete":
                 deadline = request.form['deadline']
-                A.deleteDeadline(conn, username, deadline)
+                A.deleteDeadline(conn, deadline)
             deadlineList = G.allDeadlines(conn)
             return render_template('adminDeadlines.html',
                                    username=username,

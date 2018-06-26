@@ -14,130 +14,132 @@ def isAdmin(conn, username):
     return info['uType'] == "admin"
 
 # add funding deadline
-def addDeadline(conn, username, deadline, fType, budgetFood, budgetNonFood):
-    if isAdmin(conn, username):
-        curs = conn.cursor(MySQLdb.cursors.DictCursor)
-        curs.execute('INSERT INTO funding \
-                                  (deadline, fType, budgetFood, budgetNonFood) \
-                      VALUES      (%s, %s, %s, %s)',
-                     [deadline, fType, budgetFood, budgetNonFood])
-        return "Deadline has been successfully added."
-    else:
-        return "You are not authorized to create a funding deadline."
+def addDeadline(conn, deadline, fType, budgetFood, budgetNonFood):
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    curs.execute('INSERT INTO funding \
+                              (deadline, fType, budgetFood, budgetNonFood) \
+                  VALUES      (%s, %s, %s, %s)',
+                 [deadline, fType, budgetFood, budgetNonFood])
+    return "Deadline has been successfully added."
 
 # delete funding deadline
-def deleteDeadline(conn, username, deadline):
-    if isAdmin(conn, username):
-        curs = conn.cursor(MySQLdb.cursors.DictCursor)
-        curs.execute('DELETE FROM funding WHERE deadline=%s',
-                     [deadline])
-        return "Deadline has been successfully deleted."
-    else:
-        return "You are not authorized to delete a funding deadline."
+def deleteDeadline(conn, deadline):
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    curs.execute('DELETE FROM funding WHERE deadline=%s',
+                 [deadline])
+    return "Deadline has been successfully deleted."
 
 # add user as a treasurer
-def addTreasurer(conn, username, orgName, treasurer):
-    if isAdmin(conn, username):
-        curs = conn.cursor(MySQLdb.cursors.DictCursor)
-        curs.execute('INSERT INTO treasurer \
-                                  (orgName, username) \
-                      VALUES (%s, %s)',
-                     [orgName, treasurer])
-        return "Treasurer "+treasurer+" for "+orgName+" has been successfully \
-               added."
-    else:
-        return "You are not authorized to add a treasurer."
+def addTreasurer(conn, orgName, treasurer):
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    curs.execute('INSERT INTO user \
+                              (username) \
+                  VALUES      (%s) \
+                  ON DUPLICATE KEY UPDATE username=%s',
+                 [treasurer, treasurer])
+    curs.execute('INSERT INTO treasurer \
+                              (orgName, username) \
+                  VALUES      (%s, %s) \
+                  ON DUPLICATE KEY UPDATE username=%s',
+                 [orgName, treasurer, treasurer])
+    return "Treasurer "+treasurer+" for "+orgName+" has been successfully \
+            added."
 
 # delete user as a treasurer
-def deleteTreasurer(conn, username, orgName, treasurer):
-    if isAdmin(conn, username):
-        curs = conn.cursor(MySQLdb.cursors.DictCursor)
-        curs.execute('DELETE FROM treasurer \
-                      WHERE       orgName=%s, \
-                                  username=%s',
-                     [orgName, treasurer])
-        return "Treasurer "+treasurer+" for "+orgName+" has been successfully \
-               deleted."
-    else:
-        return "You are not authorized to delete a treasurer."
+def deleteTreasurer(conn, orgName, treasurer):
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    curs.execute('DELETE FROM treasurer \
+                  WHERE       orgName=%s \
+                              AND username=%s',
+                 [orgName, treasurer])
+    return "Treasurer "+treasurer+" for "+orgName+" has been successfully \
+           deleted."
 
 # add user as a SOFC member
-def addSOFC(conn, username, SOFC):
-    if isAdmin(conn, username):
-        curs = conn.cursor(MySQLdb.cursors.DictCursor)
+def addSOFC(conn, SOFC):
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    curs.execute('SELECT uType FROM user WHERE username=%s',
+                 [SOFC])
+    info = curs.fetchone()
+    if info is None or info['uType'] == "general":
         curs.execute('INSERT INTO user \
                                   (username, uType) \
-                      VALUES      (%s, %s) \
-                      ON DUPLICATE KEY UPDATE uType=%s',
-                     [SOFC, 'sofc', 'sofc'])
-        return "SOFC member "+SOFC+" has been successfully added."
-    else:
-        return "You are not authorized to add a SOFC member."
+                      VALUES      (%s, "sofc") \
+                      ON DUPLICATE KEY UPDATE uType="sofc"',
+                     [SOFC])
+    return "SOFC member "+SOFC+" has been successfully added."
 
 # delete user as a SOFC member
-def deleteSOFC(conn, username, SOFC):
-    if isAdmin(conn, username):
-        curs = conn.cursor(MySQLdb.cursors.DictCursor)
-        curs.execute('UPDATE user \
-                      SET    uType=1 \
-                      WHERE  username=%s',
+def deleteSOFC(conn, SOFC):
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    curs.execute('SELECT uType FROM user WHERE username=%s',
+                 [SOFC])
+    info = curs.fetchone()
+    if info is None or info['uType'] == "sofc":
+        curs.execute('UPDATE user SET uType=1 WHERE username=%s',
                      [SOFC])
-        return "SOFC member "+SOFC+" has been successfully deleted."
-    else:
-        return "You are not authorized to delete a SOFC member."
+    return "SOFC member "+SOFC+" has been successfully deleted."
 
 # add new org
-def addOrg(conn, username name, classification, sofc, profit):
-    if isAdmin(conn, username):
-        curs = conn.cursor(MySQLdb.cursors.DictCursor)
-        curs.execute('INSERT INTO org \
-                                  (name, classification, sofc) \
-                      VALUES      (%s, %s, %s)',
-                     [name, classification, sofc])
-        if profit:
-            curs.execute('UPDATE org \
-                          SET    profit=%s \
-                          WHERE  name=%s',
-                         [profit, name])
-        return "Org "+name+" has been successfully added."
-    else:
-        return "You are not authorized to add an org."
+def addOrg(conn, name, classification, sofc, profit):
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    curs.execute('INSERT INTO org \
+                              (name, classification, sofc) \
+                  VALUES      (%s, %s, %s)',
+                 [name, classification, sofc])
+    if profit:
+        curs.execute('UPDATE org \
+                      SET    profit=%s \
+                      WHERE  name=%s',
+                     [profit, name])
+    return "Org "+name+" has been successfully added."
 
 # remove org's ability to apply for sofc (or delete if never applied before)
-def deleteOrg(conn, username, name):
-    if isAdmin(conn, username):
-        curs = conn.cursor(MySQLdb.cursors.DictCursor)
-        curs.execute('SELECT * FROM event WHERE orgName=%s',
+def deleteOrg(conn, name):
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    curs.execute('SELECT * FROM event WHERE orgName=%s',
+                 [name])
+    info = curs.fetchall()
+    if info is None:
+        curs.execute('DELETE FROM org WHERE name=%s',
                      [name])
-        info = curs.fetchall()
-        if info is None:
-            curs.execute('DELETE FROM org WHERE name=%s',
-                         [name])
-            return "Org "+name+"has been successfully deleted."
-        curs.execute('UPDATE org \
-                      SET    canApply=FALSE \
-                      WHERE  name=%s',
-                     [name])
-        return "Org "+name+" has been successfully removed from SOFC funding."
-    else:
-        return "You are not authorized to delete or remove an org's funding."
+        return "Org "+name+"has been successfully deleted."
+    curs.execute('UPDATE org \
+                  SET    canApply=FALSE \
+                  WHERE  name=%s',
+                 [name])
+    return "Org "+name+" has been successfully removed from SOFC funding."
 
 # update org
-def updateOrg(conn, username, name, classification, oldSOFC, newSOFC, profit,
+def updateOrg(conn, oldName, newName, classification, sofc, profit,
               canApply):
-    if isAdmin(conn, username):
-        curs = conn.cursor(MySQLdb.cursors.DictCursor)
-        curs.execute('UPDATE org \
-                      SET    name=%s, \
-                             classification=%s, \
-                             sofc=%s \
-                             profit=%s \
-                             canApply=%s \
-                      WHERE  sofc=%s',
-                     [name, classification, newSOFC, profit, oldSOFC, canApply])
-        return "Org "+name+" has been successfully updated."
-    else:
-        return "You are not authorized to update org information."
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    curs.execute('SELECT COUNT(*) FROM org WHERE sofc=%s',
+                 [sofc])
+    info = curs.fetchone()
+    nums = info['COUNT(*)']
+    if nums>0:
+        return "SOFC number "+sofc+" already belongs to another org."
+    curs.execute('UPDATE org \
+                  SET    name=%s, \
+                         classification=%s, \
+                         sofc=%s \
+                         canApply=%s \
+                  WHERE  name=%s',
+                 [newName, classification, sofc, oldName, canApply])
+    if profit:
+        curs.execute('UPDATE org SET profit=%s WHERE name=%s',
+                     [profit, newName])
+    return "Org "+name+" has been successfully updated."
+
+# get name of org given sofc num (also unique)
+def orgName(conn, sofc):
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    curs.execute('SELECT name FROM org WHERE sofc=%s',
+                 [sofc])
+    info = curs.fetchone()
+    name = info['name']
+    return name
 
 # return unreviewed costs
 def checkCosts(conn, fundingDeadline):
