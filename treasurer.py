@@ -40,7 +40,8 @@ def treasurersOrgs(conn, username):
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
     curs.execute('SELECT orgName, sofc \
                   FROM   treasurer, org \
-                  WHERE  username=%s',
+                  WHERE  username=%s \
+                         AND orgName=name',
                  [username])
     info = curs.fetchall()
     return info
@@ -109,7 +110,7 @@ def dupName(conn, orgName, eventName, fundingDeadline):
     return info is not None
 
 # add new event
-def addEvent(conn, username, orgName, eventName, eventDate, fundingDeadline,
+def addEvent(conn, username, orgName, eventName, purpose, eventDate, fundingDeadline,
              eType, students):
     # check if user is treaurer of org creating event for
     if isTreasurerOrg(conn, username, orgName):
@@ -122,11 +123,11 @@ def addEvent(conn, username, orgName, eventName, eventDate, fundingDeadline,
 
         # add event
         curs.execute('INSERT INTO event \
-                                  (treasurer, orgName, eventName, eventDate, \
-                                   fundingDeadline, eType, students) \
-                      VALUES      (%s, %s, %s, %s, %s, %s)',
-                     [username, orgName, eventName, eventDate, fundingDeadline,
-                      eType, students])
+                                  (treasurer, orgName, eventName, purpose, \
+                                   eventDate, fundingDeadline, eType, students) \
+                      VALUES      (%s, %s, %s, %s, %s, %s, %s, %s)',
+                     [username, orgName, eventName, purpose, eventDate,
+                      fundingDeadline, eType, students])
         return "Event successfully added. Please add appropriate event costs."
 
     else:
@@ -140,8 +141,8 @@ def deleteEvent(conn, orgName, id):
     return "Event successfully deleted."
 
 # update event
-def updateEvent(conn, username, id, orgName, eventName, eventDate, fundingDeadline, 
-                eType, students):
+def updateEvent(conn, username, id, orgName, eventName, purpose, eventDate,
+                fundingDeadline, eType, students):
 
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
 
@@ -153,20 +154,21 @@ def updateEvent(conn, username, id, orgName, eventName, eventDate, fundingDeadli
                          AND fundingDeadline=%s',
                  [orgName, eventName, fundingDeadline])
     info = curs.fetchone()
-    if info is None:
-        return "The event you are trying to update does not exist."
+    if info is not None:
+        return "This event name already exists for this deadline."
 
     # add event
     curs.execute('UPDATE event \
                   SET    treasurer=%s, \
                          eventName=%s, \
+                         purpose=%s, \
                          eventDate=%s, \
                          fundingDeadline=%s, \
                          eType=%s, \
-                         students=%s, \
-                  WHERE id=%s',
-                 [username, eventName, eventDate, fundingDeadline, eType,
-                 students, id])
+                         students=%s \
+                  WHERE  id=%s',
+                 [username, eventName, purpose, eventDate, fundingDeadline,
+                 eType, students, id])
     return "Event successfully updated. Please add appropriate event costs."
 
 # return cost given formula being used & input

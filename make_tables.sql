@@ -39,7 +39,7 @@ CREATE TABLE treasurer
 CREATE TABLE funding
 	(deadline DATETIME NOT NULL PRIMARY KEY,
 	 appealsDeadline DATETIME,
-	 fType ENUM('Fall', 'Fal Emergency', 'Uniquely Compelling', 'Spring',
+	 fType ENUM('Fall', 'Fall Emergency', 'Uniquely Compelling', 'Spring',
 		 'Spring Emergency', 'GP Review', 'Interim') NOT NULL,
 	 budgetFood DECIMAL(9,2) NOT NULL,
 	 budgetNonFood DECIMAL(9,2) NOT NULL) ENGINE=InnoDB;
@@ -49,6 +49,7 @@ CREATE TABLE event
 	 treasurer VARCHAR(20) NOT NULL,
 	 orgName VARCHAR(100) NOT NULL,
 	 eventName VARCHAR(100) NOT NULL,
+	 purpose VARCHAR(10000) NOT NULL,
 	 eventDate DATE NOT NULL,
 	 fundingDeadline DATETIME NOT NULL,
 	 eType ENUM('Bonding', 'Eboard', 'Lecture', 'Mixer', 'Other', 'Party',

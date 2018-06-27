@@ -36,7 +36,7 @@
 
         <div class="form-group">
           <label for="eType">Event Type:</label>
-          <select class="form-control" name="eventName" id="eType"
+          <select class="form-control" name="eType" id="eType"
                   required="required">
             <option disabled selected value=""> Choose an event type </option>
             <option value="Bonding"> Bonding </option>
@@ -50,6 +50,13 @@
             <option value="Tournament"> Tournament </option>
             <option value="Workshop"> Workshop </option>
           </select>
+        </div>
+
+        <div class="form-group">
+          <label for="purpose">Purpose of Event:</label>
+          <textarea class="form-control" id="event" rows="6"
+                    placeholder="Explain the purpose of the event"
+                    name="purpose" required></textarea>
         </div>
 
         <div class="form-group">

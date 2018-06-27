@@ -95,7 +95,7 @@ def eventInfo(conn, eventID):
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
     curs.execute('SELECT * FROM event WHERE id=%s',
                  [eventID])
-    info = curs.fetchall()
+    info = curs.fetchone()
     return info
 
 # return event costs (no appeals)

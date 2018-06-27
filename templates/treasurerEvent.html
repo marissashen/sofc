@@ -4,9 +4,13 @@
 
 <div class="container" style="margin-top:80px">
 <div class="row">
-  <h4>{{event.eventName}}  -- {{event.eventDate}}</h4>
-  <h3>{{event.eType}} requested ${{event.foodReq}} Food,
-                                ${{event.nonFoodReq}} Non Food</h3>
+  <h3>
+    {{event.eventName}}  -- {{event.eventDate}}
+    <small class="text-muted">
+      {{event.eType}} requested ${{event.foodReq}} Food,
+                                ${{event.nonFoodReq}} Non Food
+    </small>
+  </h3>
 </div>
 
 <div class="row">
@@ -21,8 +25,15 @@
         </div>
 
         <div class="form-group">
+          <label for="purpose">Purpose of Event:</label>
+          <textarea class="form-control" id="event" rows="6"
+                    value="{{event.purpose}}"
+                    name="purpose" required></textarea>
+        </div>
+
+        <div class="form-group">
           <label for="eType">Event Type:</label>
-          <select class="form-control" name="eventName" id="eType"
+          <select class="form-control" name="eType" id="eType"
                   required="required">
             <option selected value="{{event.eType}}"> {{event.eType}} </option>
             <option value="Bonding"> Bonding </option>
@@ -73,9 +84,11 @@
           <button type="submit" name="submit" class="btn btn-primary"
                   value="add {{c.id}}">Add Appeal</button>
         </form>
+        </br>
       {% endfor %}
 
       {% for ca in costAppealList %}
+        </br>
         <h4>{{ca.cType}} Cost for {{ca.totalReq}}</h4>
         <p>Appeal: {{ca.explanation}}</p>
         <form method="POST" action="">
