@@ -67,8 +67,20 @@ def allCostsAppeals(conn, eventID):
     costsWithAppeal = curs.fetchall()
     return (costsOnly, costsWithAppeal)
 
+# return all events for an org
+def ownEvents(conn, orgName, date):
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    curs.execute('SELECT * \
+                  FROM   event \
+                  WHERE  orgName=%s \
+                         AND %s<fundingDeadline \
+                  ORDER  BY eventName',
+                 [orgName, date])
+    info = curs.fetchall()
+    return info
+
 # return all events (with costs & appeals) for an org
-def allEvents(conn, orgName):
+def allEvents(conn, orgName, date):
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
     curs.execute('SELECT cost.*\
                   FROM event, cost, appeal \

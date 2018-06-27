@@ -45,7 +45,7 @@ def treasurersOrgs(conn, username):
     info = curs.fetchall()
     return info
 
-# returns name of org given sofc
+# return name of org given sofc
 def orgSOFC(conn, sofc):
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
     curs.execute('SELECT name FROM org WHERE sofc=%s',
@@ -53,6 +53,28 @@ def orgSOFC(conn, sofc):
     info = curs.fetchone()
     orgName = info['name']
     return orgName
+
+# return name of event given event id
+def getName(conn, eventID):
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    curs.execute('SELECT eventName FROM event WHERE id=%s',
+                 [eventID])
+    info = curs.fetchone()
+    eventName = info['eventName']
+    return eventName
+
+# return name of event given cost id
+def getNameCType(conn, costID):
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    curs.execute('SELECT eventName, cType \
+                  FROM   event, cost \
+                  WHERE  cost.id=%s \
+                         AND cost.eventID=event.ID',
+                 [costID])
+    info = curs.fetchone()
+    eventName = info['eventName']
+    cType = info['cType']
+    return (eventName, cType)
 
 # check if event name already exists for org in this deadline
 def dupName(conn, orgName, eventName, fundingDeadline):
@@ -65,18 +87,6 @@ def dupName(conn, orgName, eventName, fundingDeadline):
                  [orgName, eventName, fundingDeadline])
     info = curs.fetchone()
     return info is not None
-
-# return all events for an org
-def ownEvents(conn, orgName, date):
-    curs = conn.cursor(MySQLdb.cursors.DictCursor)
-    curs.execute('SELECT * \
-                  FROM   event \
-                  WHERE  orgName=%s \
-                         AND %s<fundingDeadline \
-                  ORDER  BY eventName',
-                 [orgName, date])
-    info = curs.fetchall()
-    return info
 
 # add new event
 def addEvent(conn, username, orgName, eventName, eventDate, fundingDeadline,

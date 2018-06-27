@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container" style="margin-top:80px">
+
+  <h4>Add Cost for {{eventName}}'s</h4>
+  <form method="POST" action="">
+    <div class="form-group">
+      <label for="cType">Cost Type:</label>
+      <select class="form-control" name="cType" id="cType"
+              required="required">
+        <option disabled selected value=""> Choose a cost type </option>
+        <option value="Attendee"> Attendee </option>
+        <option value="Food"> Food </option>
+        <option value="Formula"> Formula </option>
+        <option value="Honorarium"> Honorarium </option>
+        <option value="Supply"> Supply </option>
+      </select>
+    </div>
+
+    <!-- PUT AJAX HERE FOR REST OF COST OPTIONS !! -->
+
+    <div class="form-group">
+      <label for="total">Total Cost Requested:</label>
+      <input type="number" class="form-control" id="total" name="total"
+             required>
+    </div>
+
+    <button type="submit" name="submit" class="btn btn-primary" value="add">
+      Add</button>
+  </form>
+</div>
+
+{% endblock %}

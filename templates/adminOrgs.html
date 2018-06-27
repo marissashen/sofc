@@ -3,88 +3,98 @@
 {% block content %}
 
 <div class="container" style="margin-top:80px">
+<div class="row">
+  <div class="col">
+    <div class="container">
+      <h4>Add an Organization</h4>
+      <form method="POST" action="">
+        <div class="form-group">
+          <label for="name">Organization Name:</label>
+          <input type="text" class="form-control" id="name"
+                 placeholder="Enter org name" name="name" required>
+        </div>
 
-  <h4>Add an Organization</h4>
-  <form method="POST" action="">
-    <div class="form-group">
-      <label for="name">Organization Name:</label>
-      <input type="text" class="form-control" id="name"
-             placeholder="Enter org name" name="name" required>
+        <div class="form-group">
+          <label for="classification">Classification:</label>
+          <select class="form-control" name="classification" id="classification"
+                  required="required">
+            <option disabled selected value=""> Choose a classification
+              </option>
+            <option value="academic"> Academic </option>
+            <option value="arts/performing arts"> Arts/Performing Arts </option>
+            <option value="career"> Career </option>
+            <option value="CG"> CG </option>
+            <option value="class council"> Class Council </option>
+            <option value="club sports"> Club Sports </option>
+            <option value="cultural"> Cultural </option>
+            <option value="GP"> GP </option>
+            <option value="house councils"> House Councils </option>
+            <option value="media/publications"> Media/Publications </option>
+            <option value="non athletic teams"> Non Athletic Teams </option>
+            <option value="political"> Political </option>
+            <option value="religious"> Religious </option>
+            <option value="social justice"> Social Justice </option>
+            <option value="unconstituted"> Unconstituted </option>
+            <option value="volunteer"> Volunteer </option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="sofc">SOFC Number:</label>
+          <input type="number" class="form-control" id="sofc"
+                 placeholder="Enter SOFC number" name="sofc" required>
+        </div>
+
+        <div class="form-group">
+          <label for="profit">Profit Number:</label>
+          <input type="number" class="form-control" id="profit"
+                 placeholder="Enter profit number" name="profit">
+        </div>
+
+        <button type="submit" name="submit" class="btn btn-primary" value="add">
+          Add</button>
+      </form>
     </div>
+  </div>
 
-    <div class="form-group">
-      <label for="classification">Classification:</label>
-      <select class="form-control" name="classification" id="classification"
-              required="required">
-        <option disabled selected value=""> Choose a classification </option>
-        <option value="academic"> Academic </option>
-        <option value="arts/performing arts"> Arts/Performing Arts </option>
-        <option value="career"> Career </option>
-        <option value="CG"> CG </option>
-        <option value="class council"> Class Council </option>
-        <option value="club sports"> Club Sports </option>
-        <option value="cultural"> Cultural </option>
-        <option value="GP"> GP </option>
-        <option value="house councils"> House Councils </option>
-        <option value="media/publications"> Media/Publications </option>
-        <option value="non athletic teams"> Non Athletic Teams </option>
-        <option value="political"> Political </option>
-        <option value="religious"> Religious </option>
-        <option value="social justice"> Social Justice </option>
-        <option value="unconstituted"> Unconstituted </option>
-        <option value="volunteer"> Volunteer </option>
-      </select>
+  <div class="col">
+    <div class="container">
+      <h4>Delete or Remove SOFC Funding for an Organization</h4>
+      <form method="POST" action="">
+        <div class="form-group">
+          <label for="name">Organization Name:</label>
+          <select class="form-control" name="name" id="name"
+                  required="required">
+            <option disabled selected value=""> Choose an org </option>
+            {% for org in sofcOrgList %}
+              <option value="{{org.name}}"> {{org.name}} </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <button type="submit" name="submit" class="btn btn-primary"
+                value="delete"> Delete/Remove</button>
+      </form>
+
+      <br/><br/>
+      <h4>Update an Organization</h4>
+      <form method="POST" action="">
+        <div class="form-group">
+          <label for="name">Organization Name:</label>
+          <select class="form-control" name="name" id="name"
+                  required="required">
+            <option disabled selected value=""> Choose an org </option>
+            {% for org in orgList %}
+              <option value="{{org.sofc}}"> {{org.name}} </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <button type="submit" name="submit" class="btn btn-primary"
+                value="update">Update</button>
+      </form>
     </div>
-
-    <div class="form-group">
-      <label for="sofc">SOFC Number:</label>
-      <input type="number" class="form-control" id="sofc"
-             placeholder="Enter SOFC number" name="sofc" required>
-    </div>
-
-    <div class="form-group">
-      <label for="profit">Profit Number:</label>
-      <input type="number" class="form-control" id="profit"
-             placeholder="Enter profit number" name="profit">
-    </div>
-
-    <button type="submit" name="submit" class="btn btn-primary" value="add">
-      Add</button>
-  </form>
-
-  <br/><br/>
-  <h4>Delete or Remove SOFC Funding for an Organization</h4>
-  <form method="POST" action="">
-    <div class="form-group">
-      <label for="name">Organization Name:</label>
-      <select class="form-control" name="name" id="name" required="required">
-        <option disabled selected value=""> Choose an org </option>
-        {% for org in sofcOrgList %}
-          <option value="{{org.name}}"> {{org.name}} </option>
-        {% endfor %}
-      </select>
-    </div>
-
-    <button type="submit" name="submit" class="btn btn-primary" value="delete">
-      Delete/Remove</button>
-  </form>
-
-  <br/><br/>
-  <h4>Update an Organization</h4>
-  <form method="POST" action="">
-    <div class="form-group">
-      <label for="name">Organization Name:</label>
-      <select class="form-control" name="name" id="name" required="required">
-        <option disabled selected value=""> Choose an org </option>
-        {% for org in orgList %}
-          <option value="{{org.sofc}}"> {{org.name}} </option>
-        {% endfor %}
-      </select>
-    </div>
-
-    <button type="submit" name="submit" class="btn btn-primary" value="update">
-      Update</button>
-  </form>
-</div>
+  </div>
+</div></div>
 
 {% endblock %}
