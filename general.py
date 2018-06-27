@@ -90,6 +90,36 @@ def allEventsNow(conn, orgName, fundingDeadline):
     info = curs.fetchall()
     return info
 
+# return event info given event id
+def eventInfo(conn, eventID):
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    curs.execute('SELECT * FROM event WHERE id=%s',
+                 [eventID])
+    info = curs.fetchall()
+    return info
+
+# return event costs (no appeals)
+def eventCosts(conn, eventID):
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    curs.execute('SELECT cost.* \
+                  FROM   cost, appeal \
+                  WHERE  cost.eventID=%s \
+                         AND pass',
+                 [eventID])
+    info = curs.fetchall()
+    return info
+
+# return event costs (has appeals)
+def eventCostsAppeals(conn, eventID):
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    curs.execute('SELECT cost.* \
+                  FROM   cost, appeal \
+                  WHERE  cost.eventID=%s \
+                         AND cost.id=appeal.id',
+                 [eventID])
+    info = curs.fetchall()
+    return info
+
 # return all orgs that can apply for sofc funds (names & sofc num)
 def allSOFCOrgs(conn):
     curs = conn.cursor(MySQLdb.cursors.DictCursor)

@@ -145,7 +145,7 @@ def deleteEvent(conn, username, orgName, id):
 
 # update event
 def updateEvent(conn, username, id, orgName, eventName, eventDate,
-                fundingDeadline, eType, students, foodReq, nonFoodReq):
+                fundingDeadline, eType, students):
     # check if user is treaurer of org
     if isTreasurerOrg(conn, username, orgName):
         curs = conn.cursor(MySQLdb.cursors.DictCursor)
@@ -169,11 +169,9 @@ def updateEvent(conn, username, id, orgName, eventName, eventDate,
                              fundingDeadline=%s, \
                              eType=%s, \
                              students=%s, \
-                             foodReq=%s, \
-                             nonFoodReq=%s \
                       WHERE id=%s',
                      [username, eventName, eventDate, fundingDeadline, eType,
-                     students, foodReq, nonFoodReq, id])
+                     students, id])
         return "Event successfully updated. Please add appropriate event costs."
 
     else:

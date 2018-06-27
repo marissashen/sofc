@@ -220,11 +220,14 @@ def displayTreasurerCost(sofc, eventID):
         username = session['CAS_USERNAME']
         orgName = T.orgSOFC(conn, sofc)
         treasurer = T.isTreasurerOrg(conn, username, orgName)
-        pass
         if treasurer:
-            pass
+            event = G.eventInfo(conn, eventID)
+            costList = G.eventCosts(conn, eventID)
+            costAppealList = G.eventCostsAppeals(conn, eventID)
             return render_template('treasurerEvent.html',
-                                   event=event)
+                                   event=event,
+                                   costList=costList,
+                                   costAppealList=costAppealList)
     else:
         return redirect(url_for('login'))
 
@@ -241,21 +244,30 @@ def treasurerCost(sofc, eventID):
         funding = T.getFunding(conn, deadline)
         pass
         if treasurer:
-            pass
             act = request.form['submit']
 
             # update event
             if act == "update":
+                eventName = request.form['eventName']
+                eType = request.form['eType']
+                eventDate = request.form['eventDate']
+                students = request.form['students']
+                T.updateEvent(conn, username, eventID, orgName, eventName,
+                              eventDate, deadline, eType, students)
                 pass
+                return
             # delete event
             if act == "delete":
+                T.deleteEvent(conn, username, orgName, eventID)
                 pass
+                return
             # add a new cost to an existing event
             if act == "cost":
                 eventID = request.form['eventID']
                 return redirect(url_for('treasurerCost'),
                                         eventID=eventID)
             # add a new appeal to an existing cost
+            pass
             if act == "appeal":
                 costID = request.form['costID']
                 return redirect(url_for('treasurerAppeal'),
