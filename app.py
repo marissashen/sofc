@@ -120,6 +120,9 @@ def displayTreasurer():
         username = session['CAS_USERNAME']
         treasurer = T.isTreasurer(conn, username)
         orgs = T.treasurersOrgs(conn, username)
+        date = datetime.datetime.now()
+        deadline = T.getDeadline(conn, date)
+        session['deadline'] = deadline
         if treasurer:
             # go directly to org if user only treasurer for 1 org
             if len(orgs)==1:
@@ -156,14 +159,16 @@ def displayTreasurerOrg(sofc):
 
     if 'CAS_USERNAME' in session:
         username = session['CAS_USERNAME']
+        deadline = session['deadline']
+        funding = T.getFunding(conn, deadline)
         orgName = T.orgSOFC(conn, sofc)
         treasurer = T.isTreasurerOrg(conn, username, orgName)
-        date = datetime.datetime.now()
         if treasurer:
             deadlineList = G.allDeadlines(conn)
-            eventList = T.ownEvents(conn, orgName, date)
+            eventList = G.allEventsNow(conn, orgName, deadline)
             return render_template('treasurerOrg.html',
                                    username=username,
+                                   funding=funding,
                                    deadlineList=deadlineList,
                                    eventList=eventList)
     else:
@@ -178,18 +183,73 @@ def treasurerOrg(sofc):
         username = session['CAS_USERNAME']
         orgName = T.orgSOFC(conn, sofc)
         treasurer = T.isTreasurerOrg(conn, username, orgName)
+        deadline = session['deadline']
+        funding = T.getFunding(conn, deadline)
         if treasurer:
             act = request.form['submit']
 
+            # edit event (also add costs & appeals)
+            if act[:4] == "edit":
+                eventID = int(act[5:])
+                return redirect(url_for('treasurerEvent',
+                                        sofc=sofc,
+                                        eventID=eventID))
+            # pureposefully change deadline
+            if act == "change":
+                fundingDeadline = request.form['fundingDeadline']
+                session['deadline'] = fundingDeadline
             # add a new event
             if act == "event":
+                fundingDeadline = funding['deadline']
                 eventName = request.form['eventName']
-                fundingDeadline = request.form['fundingDeadline']
                 eType = request.form['eType']
                 eventDate = request.form['eventDate']
                 students = request.form['students']
                 T.addEvent(conn, username, orgName, eventName, eventDate,
                            fundingDeadline, eType, students)
+            return displayTreasurerOrg(sofc)
+    else:
+        return redirect(url_for('login'))
+
+# display treaurer event
+@app.route('/treasurerEvent/<sofc>-<eventID>')
+def displayTreasurerCost(sofc, eventID):
+    conn = dbconn2.connect(DSN)
+
+    if 'CAS_USERNAME' in session:
+        username = session['CAS_USERNAME']
+        orgName = T.orgSOFC(conn, sofc)
+        treasurer = T.isTreasurerOrg(conn, username, orgName)
+        pass
+        if treasurer:
+            pass
+            return render_template('treasurerEvent.html',
+                                   event=event)
+    else:
+        return redirect(url_for('login'))
+
+# treaurer event routes
+@app.route('/treasurerEvent/<sofc>-<eventID'>, methods=['POST'])
+def treasurerCost(sofc, eventID):
+    conn = dbconn2.connect(DSN)
+
+    if 'CAS_USERNAME' in session:
+        username = session['CAS_USERNAME']
+        orgName = T.orgSOFC(conn, sofc)
+        treasurer = T.isTreasurerOrg(conn, username, orgName)
+        deadline = session['deadline']
+        funding = T.getFunding(conn, deadline)
+        pass
+        if treasurer:
+            pass
+            act = request.form['submit']
+
+            # update event
+            if act == "update":
+                pass
+            # delete event
+            if act == "delete":
+                pass
             # add a new cost to an existing event
             if act == "cost":
                 eventID = request.form['eventID']
@@ -197,11 +257,14 @@ def treasurerOrg(sofc):
                                         eventID=eventID)
             # add a new appeal to an existing cost
             if act == "appeal":
-                pass
+                costID = request.form['costID']
+                return redirect(url_for('treasurerAppeal'),
+                                        sofc=sofc,
+                                        costID=costID)
     else:
         return redirect(url_for('login'))
 
-# display treaurer org
+# display treaurer cost
 @app.route('/treasurerCost/<eventID>')
 def displayTreasurerCost(eventID):
     conn = dbconn2.connect(DSN)
@@ -211,6 +274,7 @@ def displayTreasurerCost(eventID):
         orgName = T.orgSOFC(conn, sofc)
         treasurer = T.isTreasurerOrg(conn, username, orgName)
         date = datetime.datetime.now()
+        pass
         if treasurer:
             pass
             eventName = T.getName(conn, eventID)
@@ -219,7 +283,7 @@ def displayTreasurerCost(eventID):
     else:
         return redirect(url_for('login'))
 
-# treaurer org routes
+# treaurer cost routes
 @app.route('/treasurerCost/<eventID>', methods=['POST'])
 def treasurerCost(eventID):
     conn = dbconn2.connect(DSN)
@@ -228,17 +292,19 @@ def treasurerCost(eventID):
         username = session['CAS_USERNAME']
         orgName = T.orgSOFC(conn, sofc)
         treasurer = T.isTreasurerOrg(conn, username, orgName)
+        pass
         if treasurer:
             if request.form['submit'] == "add":
                 cType = request.form['cType']
                 args = request.form['args']
                 total = request.form['total']
                 T.addCost(conn, username, orgName, eventID, total, cType, args)
+                pass
                 return
     else:
         return redirect(url_for('login'))
 
-# display treaurer org
+# display treaurer appeal
 @app.route('/treasurerAppeal/<sofc>-<costID>')
 def displayTreasurerCost(sofc, costID):
     conn = dbconn2.connect(DSN)
@@ -256,7 +322,7 @@ def displayTreasurerCost(sofc, costID):
     else:
         return redirect(url_for('login'))
 
-# treaurer org routes
+# treaurer appeal routes
 @app.route('/treasurerAppeal/<sofc>-<costID>', methods=['POST'])
 def treasurerCost(sofc, costID):
     conn = dbconn2.connect(DSN)

@@ -76,6 +76,26 @@ def getNameCType(conn, costID):
     cType = info['cType']
     return (eventName, cType)
 
+# return deadline closest to given current date
+def getDeadline(conn, date):
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    curs.execute('SELECT   deadline \
+                  FROM     funding \
+                  WHERE    deadline>=%s \
+                  ORDER BY deadline ASC',
+                 [date])
+    info = curs.fetchone()
+    deadline = info['deadline']
+    return deadline
+
+# return all funding info given deadline
+def getFunding(conn, deadline):
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    curs.execute('SELECT * FROM funding WHERE deadline=%s',
+                 [deadline])
+    info = curs.fetchone()
+    return info
+
 # check if event name already exists for org in this deadline
 def dupName(conn, orgName, eventName, fundingDeadline):
     curs = conn.cursor(MySQLdb.cursors.DictCursor)

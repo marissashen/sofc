@@ -4,6 +4,26 @@
 
 <div class="container" style="margin-top:80px">
 <div class="row">
+  <h4>Funding Deadline: {{funding.fType}} ({{funding.deadline}})</h4>
+  <form method="POST" action="">
+    <div class="form-group">
+      <label for="fundingDeadline">Change Deadline:</label>
+      <select class="form-control" name="fundingDeadline"
+              id="fundingDeadline" required="required">
+        <option disabled selected value=""> Choose a deadline </option>
+        {% for d in deadlineList %}
+          <option value="{{d.deadline}}"> {{d.fType}} -- {{d.deadline}}
+            </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <button type="submit" name="submit" class="btn btn-primary"
+            value="change">Change Deadline</button>
+  </form>
+</div>
+
+<div class="row">
   <div class="col">
     <div class="container">
       <h4>Add an Event</h4>
@@ -12,18 +32,6 @@
           <label for="eventName">Event Name:</label>
           <input class="form-control" type="text" id="eventName"
                  name="eventName" placeholder="Enter event name" required>
-        </div>
-
-        <div class="form-group">
-          <label for="fundingDeadline">Funding Deadline:</label>
-          <select class="form-control" name="fundingDeadline"
-                  id="fundingDeadline" required="required">
-            <option disabled selected value=""> Choose a deadline </option>
-            {% for d in deadlineList %}
-              <option value="{{d.deadline}}"> {{d.fType}} -- {{d.deadline}}
-              </option>
-            {% endfor %}
-          </select>
         </div>
 
         <div class="form-group">
@@ -59,29 +67,20 @@
         <button type="submit" name="submit" class="btn btn-primary"
                 value="event">Add Event</button>
       </form>
-
-      <br/><br/>
-      <h4>Add a Cost</h4>
-      <form method="POST" action="">
-        <div class="form-group">
-          <label for="eventID">Event:</label>
-          <select class="form-control" name="eventID"
-                  id="eventID" required="required">
-            <option disabled selected value=""> Choose an event </option>
-            {% for e in eventList %}
-              <option value="{{e.id}}"> {{e.eventName}} </option>
-            {% endfor %}
-          </select>
-        </div>
-
-        <button type="submit" name="submit" class="btn btn-primary"
-                value="cost">Add Cost</button>
-      </form>
     </div>
   </div>
 
   <div class="col">
     <div class="container">
+      {% for e in eventList %}
+        <h4>Event: {{e.eventName}} -- {{e.eventDate}}</h4>
+        <h5>{{e.eType}} requested ${{e.foodReq}} Food,
+                                  ${{e.nonFoodReq}} Non Food</h5>
+        <form method="POST" action="">
+          <button type="submit" name="submit" class="btn btn-primary"
+                  value="edit {{e.id}}">Edit Event</button>
+        </form>
+      {% endfor %}
     </div>
   </div>
 

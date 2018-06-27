@@ -39,8 +39,8 @@ CREATE TABLE treasurer
 CREATE TABLE funding
 	(deadline DATETIME NOT NULL PRIMARY KEY,
 	 appealsDeadline DATETIME,
-	 fType ENUM('fall', 'fall emergency', 'uniquely compelling', 'spring',
-		 'spring emergency', 'gp review', 'interim') NOT NULL,
+	 fType ENUM('Fall', 'Fal Emergency', 'Uniquely Compelling', 'Spring',
+		 'Spring Emergency', 'GP Review', 'Interim') NOT NULL,
 	 budgetFood DECIMAL(9,2) NOT NULL,
 	 budgetNonFood DECIMAL(9,2) NOT NULL) ENGINE=InnoDB;
 
