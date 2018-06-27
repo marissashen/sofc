@@ -134,49 +134,40 @@ def addEvent(conn, username, orgName, eventName, eventDate, fundingDeadline,
                contact bursarsoffice@wellesley.edu if this is a mistake."
 
 # delete event
-def deleteEvent(conn, username, orgName, id):
-    if isTreasurerOrg(conn, username, orgName):
-        curs = conn.cursor(MySQLdb.cursors.DictCursor)
-        curs.execute('DELETE FROM event WHERE id=%s', [id])
-        return "Event successfully deleted."
-    else:
-        return "You are not listed as a treasurer for "+orgName+". Please \
-               contact bursarsoffice@wellesley.edu if this is a mistake."
+def deleteEvent(conn, orgName, id):
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    curs.execute('DELETE FROM event WHERE id=%s', [id])
+    return "Event successfully deleted."
 
 # update event
-def updateEvent(conn, username, id, orgName, eventName, eventDate,
-                fundingDeadline, eType, students):
-    # check if user is treaurer of org
-    if isTreasurerOrg(conn, username, orgName):
-        curs = conn.cursor(MySQLdb.cursors.DictCursor)
+def updateEvent(conn, username, id, orgName, eventName, eventDate, fundingDeadline, 
+                eType, students):
 
-        # check another event with same name hasn't been made already
-        curs.execute('SELECT * \
-                      FROM   event \
-                      WHERE  orgName=%s \
-                             AND eventName=%s \
-                             AND fundingDeadline=%s',
-                     [orgName, eventName, fundingDeadline])
-        info = curs.fetchone()
-        if info is None:
-            return "The event you are trying to update does not exist."
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
 
-        # add event
-        curs.execute('UPDATE event \
-                      SET    treasurer=%s, \
-                             eventName=%s, \
-                             eventDate=%s, \
-                             fundingDeadline=%s, \
-                             eType=%s, \
-                             students=%s, \
-                      WHERE id=%s',
-                     [username, eventName, eventDate, fundingDeadline, eType,
-                     students, id])
-        return "Event successfully updated. Please add appropriate event costs."
+    # check another event with same name hasn't been made already
+    curs.execute('SELECT * \
+                  FROM   event \
+                  WHERE  orgName=%s \
+                         AND eventName=%s \
+                         AND fundingDeadline=%s',
+                 [orgName, eventName, fundingDeadline])
+    info = curs.fetchone()
+    if info is None:
+        return "The event you are trying to update does not exist."
 
-    else:
-        return "You are not listed as a treasurer for "+orgName+". Please \
-               contact bursarsoffice@wellesley.edu if this is a mistake."
+    # add event
+    curs.execute('UPDATE event \
+                  SET    treasurer=%s, \
+                         eventName=%s, \
+                         eventDate=%s, \
+                         fundingDeadline=%s, \
+                         eType=%s, \
+                         students=%s, \
+                  WHERE id=%s',
+                 [username, eventName, eventDate, fundingDeadline, eType,
+                 students, id])
+    return "Event successfully updated. Please add appropriate event costs."
 
 # return cost given formula being used & input
 def applyFormula(kind, input):

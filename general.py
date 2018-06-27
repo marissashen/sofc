@@ -101,10 +101,12 @@ def eventInfo(conn, eventID):
 # return event costs (no appeals)
 def eventCosts(conn, eventID):
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
-    curs.execute('SELECT cost.* \
-                  FROM   cost, appeal \
-                  WHERE  cost.eventID=%s \
-                         AND pass',
+    curs.execute('SELECT * \
+                  FROM   cost \
+                  WHERE  eventID=%s \
+                         AND id IN (SELECT id \
+                                    FROM   appeal \
+                                    WHERE  cost.id=appeal.id)',
                  [eventID])
     info = curs.fetchall()
     return info

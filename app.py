@@ -213,7 +213,7 @@ def treasurerOrg(sofc):
 
 # display treaurer event
 @app.route('/treasurerEvent/<sofc>-<eventID>')
-def displayTreasurerCost(sofc, eventID):
+def displayTreasurerEvent(sofc, eventID):
     conn = dbconn2.connect(DSN)
 
     if 'CAS_USERNAME' in session:
@@ -233,7 +233,7 @@ def displayTreasurerCost(sofc, eventID):
 
 # treaurer event routes
 @app.route('/treasurerEvent/<sofc>-<eventID'>, methods=['POST'])
-def treasurerCost(sofc, eventID):
+def treasurerEvent(sofc, eventID):
     conn = dbconn2.connect(DSN)
 
     if 'CAS_USERNAME' in session:
@@ -241,8 +241,6 @@ def treasurerCost(sofc, eventID):
         orgName = T.orgSOFC(conn, sofc)
         treasurer = T.isTreasurerOrg(conn, username, orgName)
         deadline = session['deadline']
-        funding = T.getFunding(conn, deadline)
-        pass
         if treasurer:
             act = request.form['submit']
 
@@ -252,27 +250,36 @@ def treasurerCost(sofc, eventID):
                 eType = request.form['eType']
                 eventDate = request.form['eventDate']
                 students = request.form['students']
-                T.updateEvent(conn, username, eventID, orgName, eventName,
+                T.updateEvent(conn, treasurer, eventID, orgName, eventName,
                               eventDate, deadline, eType, students)
-                pass
-                return
+                return displayTreasurerEvent(sofc, eventID)
             # delete event
             if act == "delete":
-                T.deleteEvent(conn, username, orgName, eventID)
-                pass
-                return
+                T.deleteEvent(conn, orgName, eventID)
+                return redirect(url_for('treasurerOrg',
+                                        sofc=sofc))
             # add a new cost to an existing event
             if act == "cost":
                 eventID = request.form['eventID']
                 return redirect(url_for('treasurerCost'),
                                         eventID=eventID)
+            # edit an existing cost
+            if act[:3] == "edc":
+                costID = int(act[4:])
+                return redirect(url_for('treasurerUpdateCost'),
+                                        costID=costID)
             # add a new appeal to an existing cost
-            pass
-            if act == "appeal":
-                costID = request.form['costID']
+            if act[:3] == "add":
+                costID = int(act[4:])
                 return redirect(url_for('treasurerAppeal'),
                                         sofc=sofc,
                                         costID=costID)
+            # edit an existing appeal
+            if act[:3] == "eda":
+                costID = int(act[4:])
+                return redirect(url_for('treasurerUpdateAppeal',
+                                        sofc=sofc,
+                                        costID=costID))
     else:
         return redirect(url_for('login'))
 
