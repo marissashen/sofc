@@ -5,6 +5,7 @@ from flask_cas import CAS
 
 import os
 import imghdr
+import datetime
 
 app = Flask(__name__)
 CAS(app)
@@ -111,16 +112,25 @@ def general():
         return redirect(url_for('login'))
 
 # display treaurer
-@app.route('/treasurer/', methods=['GET', 'POST'])
+@app.route('/treasurer/')
 def displayTreasurer():
     conn = dbconn2.connect(DSN)
 
     if 'CAS_USERNAME' in session:
         username = session['CAS_USERNAME']
         treasurer = T.isTreasurer(conn, username)
+        orgs = T.treasurersOrgs(conn, username)
         if treasurer:
-            return render_template('treasurer.html',
-                                   username=username)
+            # go directly to org if user only treasurer for 1 org
+            if len(orgs)==1:
+                sofc = orgs[1]['sofc']
+                return redirect(url_for('treasurerOrg'),
+                                        sofc=sofc)
+            # page where treasurer can pick which org they want to look at
+            else:
+                return render_template('treasurer.html',
+                                       username=username,
+                                       orgs=orgs)
     else:
         return redirect(url_for('login'))
 
@@ -131,7 +141,87 @@ def treasurer():
 
     if 'CAS_USERNAME' in session:
         username = session['CAS_USERNAME']
-        treasurer = T.isTreasurer(conn, username)
+        sofc = int(request.form['submit'])
+        treasurer = T.isTreasurerSOFC(conn, username, sofc)
+        if treasurer:
+            return redirect(url_for('treasurerOrg'),
+                                    sofc=sofc)
+    else:
+        return redirect(url_for('login'))
+
+# display treaurer org
+@app.route('/treasurerOrg/<sofc>')
+def displayTreasurerOrg(sofc):
+    conn = dbconn2.connect(DSN)
+
+    if 'CAS_USERNAME' in session:
+        username = session['CAS_USERNAME']
+        orgName = T.orgSOFC(conn, sofc)
+        treasurer = T.isTreasurerOrg(conn, username, orgName)
+        date = datetime.datetime.now()
+        if treasurer:
+            deadlineList = G.allDeadlines(conn)
+            eventList = T.ownEvents(conn, orgName, date)
+            return render_template('treasurerOrg.html',
+                                   username=username,
+                                   deadlineList=deadlineList,
+                                   eventList=eventList)
+    else:
+        return redirect(url_for('login'))
+
+# treaurer org routes
+@app.route('/treasurerOrg/<sofc>', methods=['POST'])
+def treasurerOrg(sofc):
+    conn = dbconn2.connect(DSN)
+
+    if 'CAS_USERNAME' in session:
+        username = session['CAS_USERNAME']
+        orgName = T.orgSOFC(conn, sofc)
+        treasurer = T.isTreasurerOrg(conn, username, orgName)
+        if treasurer:
+            act = request.form['submit']
+
+            # add a new event
+            if act == "event":
+                eventName = request.form['eventName']
+                fundingDeadline = request.form['fundingDeadline']
+                eType = request.form['eType']
+                eventDate = request.form['eventDate']
+                students = request.form['students']
+                T.addEvent(conn, username, orgName, eventName, eventDate,
+                           fundingDeadline, eType, students)
+            # add a new cost to an existing event
+            if act == "cost":
+                eventID = request.form['eventID']
+                return redirect(url_for('treasurerCost'),
+                                        eventID=eventID)
+    else:
+        return redirect(url_for('login'))
+
+# display treaurer org
+@app.route('/treasurerCost/<eventID>')
+def displayTreasurerCost(eventID):
+    conn = dbconn2.connect(DSN)
+
+    if 'CAS_USERNAME' in session:
+        username = session['CAS_USERNAME']
+        orgName = T.orgSOFC(conn, sofc)
+        treasurer = T.isTreasurerOrg(conn, username, orgName)
+        date = datetime.datetime.now()
+        if treasurer:
+            pass
+    else:
+        return redirect(url_for('login'))
+
+# treaurer org routes
+@app.route('/treasurerCost/<eventID>', methods=['POST'])
+def treasurerCost(eventID):
+    conn = dbconn2.connect(DSN)
+
+    if 'CAS_USERNAME' in session:
+        username = session['CAS_USERNAME']
+        orgName = T.orgSOFC(conn, sofc)
+        treasurer = T.isTreasurerOrg(conn, username, orgName)
         if treasurer:
             pass
     else:
@@ -188,6 +278,7 @@ def admin():
         admin = A.isAdmin(conn, username)
         if admin:
             html = request.form['submit']
+            # possible pages to go to
             if html == "USERS":
                 return redirect(url_for('adminUsers'))
             if html == "ORGS":
@@ -223,17 +314,21 @@ def adminUsers():
         admin = A.isAdmin(conn, username)
         if admin:
             act = request.form['submit']
+            # adding a new treasurer
             if act == "addTreasurer":
                 orgName = request.form['orgName']
                 treasurer = request.form['username']
                 A.addTreasurer(conn, orgName, treasurer)
+            # removing user from being an treasurer
             if act == "removeTreasurer":
                 orgName = request.form['orgName']
                 treasurer = request.form['username']
                 A.deleteTreasurer(conn, orgName, treasurer)
+            # adding user to sofc group
             if act == "addSOFC":
                 SOFC = request.form['username']
                 A.addSOFC(conn, SOFC)
+            # removing user from sofc group
             if act == "removeSOFC":
                 SOFC = request.form['username']
                 A.deleteSOFC(conn, SOFC)
@@ -270,15 +365,18 @@ def adminOrgs():
         orgList = G.allOrgs(conn)
         if admin:
             act = request.form['submit']
+            # adding a new org for sofc funding
             if act == "add":
                 name = request.form['name']
                 classification = request.form['classification']
                 sofc = request.form['sofc']
                 profit = request.form['profit']
                 A.addOrg(conn, name, classification, sofc, profit)
+            # deleting an org or revoking sofc funding status
             if act == "delete":
                 name = request.form['name']
                 A.deleteOrg(conn, name)
+            # updating org info
             if act == "update":
                 sofc = request.form['name']
                 return redirect(url_for('displayUpdateOrg',
@@ -354,9 +452,11 @@ def adminDeadlines():
         admin = A.isAdmin(conn, username)
         if admin:
             act = request.form['submit']
-            if act == "grantDeadline":
+            # allocate funds for deadline
+            if act == "allocateDeadline":
                 deadline = request.form['deadline']
                 A.calcAllocated(conn, deadline)
+            # creating new deadline
             if act == "addDeadline":
                 fType = request.form['fType']
                 deadline = request.form['deadline']
@@ -365,6 +465,7 @@ def adminDeadlines():
                 budgetNonFood = request.form['budgetNonFood']
                 A.addDeadline(conn, deadline, fType, budgetFood,
                               budgetNonFood)
+            # deleting deadline
             if act == "delete":
                 deadline = request.form['deadline']
                 A.deleteDeadline(conn, deadline)

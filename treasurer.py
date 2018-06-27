@@ -9,7 +9,7 @@ import dbconn2
 # check if user is treasurer of any org
 def isTreasurer(conn, username):
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
-    curs.execute('SELECT * FROM treasurer WHERE username= %s', [username])
+    curs.execute('SELECT * FROM treasurer WHERE username=%s', [username])
     info = curs.fetchone()
     return info is not None
 
@@ -18,11 +18,41 @@ def isTreasurerOrg(conn, username, orgName):
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
     curs.execute('SELECT * \
                   FROM   treasurer \
-                  WHERE  username= %s \
+                  WHERE  username=%s \
                          AND orgName=%s',
                  [username, orgName])
     info = curs.fetchone()
     return info is not None
+
+# check if user is treasurer of sofc
+def isTreasurerSOFC(conn, username, sofc):
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    curs.execute('SELECT * \
+                  FROM   treasurer, org \
+                  WHERE  username=%s \
+                         AND sofc=%s',
+                 [username, sofc])
+    info = curs.fetchone()
+    return info is not None
+
+# return all orgs user is treasurer of along w. sofc nums
+def treasurersOrgs(conn, username):
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    curs.execute('SELECT orgName, sofc \
+                  FROM   treasurer, org \
+                  WHERE  username=%s',
+                 [username])
+    info = curs.fetchall()
+    return info
+
+# returns name of org given sofc
+def orgSOFC(conn, sofc):
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    curs.execute('SELECT name FROM org WHERE sofc=%s',
+                 [sofc])
+    info = curs.fetchone()
+    orgName = info['name']
+    return orgName
 
 # check if event name already exists for org in this deadline
 def dupName(conn, orgName, eventName, fundingDeadline):
@@ -36,22 +66,21 @@ def dupName(conn, orgName, eventName, fundingDeadline):
     info = curs.fetchone()
     return info is not None
 
-# return all events that username is treasurer of
-def ownEvents(conn, username, fundingDeadline):
+# return all events for an org
+def ownEvents(conn, orgName, date):
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
-    curs.execute('SELECT event.* \
-                  FROM   event, treasurer \
-                  WHERE  treasurer.username=%s \
-                         AND treasurer.orgName=event.orgName \
-                         AND event.fundingDeadline=%s \
-                  ORDER  BY event.orgName',
-                 [username, fundingDeadline])
+    curs.execute('SELECT * \
+                  FROM   event \
+                  WHERE  orgName=%s \
+                         AND %s<fundingDeadline \
+                  ORDER  BY eventName',
+                 [orgName, date])
     info = curs.fetchall()
     return info
 
 # add new event
 def addEvent(conn, username, orgName, eventName, eventDate, fundingDeadline,
-             eType, students, foodReq, nonFoodReq):
+             eType, students):
     # check if user is treaurer of org creating event for
     if isTreasurerOrg(conn, username, orgName):
         curs = conn.cursor(MySQLdb.cursors.DictCursor)
@@ -64,11 +93,10 @@ def addEvent(conn, username, orgName, eventName, eventDate, fundingDeadline,
         # add event
         curs.execute('INSERT INTO event \
                                   (treasurer, orgName, eventName, eventDate, \
-                                   fundingDeadline, eType, students, foodReq, \
-                                   nonFoodReq) \
-                      VALUES      (%s, %s, %s, %s, %s, %s, %s, %s)',
+                                   fundingDeadline, eType, students) \
+                      VALUES      (%s, %s, %s, %s, %s, %s)',
                      [username, orgName, eventName, eventDate, fundingDeadline,
-                      eType, students,foodReq, nonFoodReq])
+                      eType, students])
         return "Event successfully added. Please add appropriate event costs."
 
     else:
