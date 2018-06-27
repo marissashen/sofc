@@ -4,23 +4,26 @@
 
 <div class="container" style="margin-top:80px">
 <div class="row">
-  <h4>Funding Deadline: {{funding.fType}} ({{funding.deadline}})</h4>
-  <form method="POST" action="">
-    <div class="form-group">
-      <label for="fundingDeadline">Change Deadline:</label>
-      <select class="form-control" name="fundingDeadline"
-              id="fundingDeadline" required="required">
-        <option disabled selected value=""> Choose a deadline </option>
-        {% for d in deadlineList %}
-          <option value="{{d.deadline}}"> {{d.fType}} -- {{d.deadline}}
-            </option>
-        {% endfor %}
-      </select>
-    </div>
+  <div class="container">
+    <h3>{{orgName}}</h3>
+    <h4>Funding Deadline: {{funding.fType}} ({{funding.deadline}})</h4>
+    <form method="POST" action="">
+      <div class="form-group">
+        <label for="fundingDeadline">Change Deadline:</label>
+        <select class="form-control" name="fundingDeadline"
+                id="fundingDeadline" required="required">
+          <option disabled selected value=""> Choose a deadline </option>
+          {% for d in deadlineList %}
+            <option value="{{d.deadline}}"> {{d.fType}} -- {{d.deadline}}
+              </option>
+          {% endfor %}
+        </select>
+      </div>
 
-    <button type="submit" name="submit" class="btn btn-primary"
-            value="change">Change Deadline</button>
-  </form>
+      <button type="submit" name="submit" class="btn btn-primary"
+              value="change">Change Deadline</button>
+    </form>
+  </div>
 </div>
 
 <div class="row">
@@ -80,7 +83,7 @@
   <div class="col">
     <div class="container">
       {% for e in eventList %}
-        <h4>Event: {{e.eventName}} -- {{e.eventDate}}</h4>
+        <h4>Event: {{e.eventName}} ({{e.eventDate}})</h4>
         <h5>{{e.eType}} requested ${{e.foodReq}} Food,
                                   ${{e.nonFoodReq}} Non Food</h5>
         <form method="POST" action="">

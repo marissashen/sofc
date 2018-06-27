@@ -126,7 +126,7 @@ def displayTreasurer():
         if treasurer:
             # go directly to org if user only treasurer for 1 org
             if len(orgs)==1:
-                sofc = orgs[1]['sofc']
+                sofc = orgs[0]['sofc']
                 return redirect(url_for('treasurerOrg',
                                         sofc=sofc))
             # page where treasurer can pick which org they want to look at
@@ -168,6 +168,7 @@ def displayTreasurerOrg(sofc):
             eventList = G.allEventsNow(conn, orgName, deadline)
             return render_template('treasurerOrg.html',
                                    username=username,
+                                   orgName=orgName,
                                    funding=funding,
                                    deadlineList=deadlineList,
                                    eventList=eventList)
@@ -206,7 +207,7 @@ def treasurerOrg(sofc):
                 eType = request.form['eType']
                 eventDate = request.form['eventDate']
                 students = request.form['students']
-                T.addEvent(conn, username, orgName, eventName purpose,
+                T.addEvent(conn, username, orgName, eventName, purpose,
                            eventDate, fundingDeadline, eType, students)
             return displayTreasurerOrg(sofc)
     else:
