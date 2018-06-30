@@ -64,6 +64,18 @@ def getName(conn, eventID):
     eventName = info['eventName']
     return eventName
 
+# get all cost info given id (general info, cost type specific info)
+def getCost(conn, costID):
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    curs.execute('SELECT * FROM cost WHERE id=%s',
+                 [costID])
+    general = curs.fetchone()
+    cType = general['cType'].lower()
+    curs.execute('SELECT * FROM %s WHERE id=%s',
+                 [cType, costID])
+    specific = curs.fetchone()
+    return (general, specific)
+
 # return name of event given cost id
 def getNameCType(conn, costID):
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
@@ -204,185 +216,171 @@ def applyFormula(kind, input):
 
 # add cost
 # args is a list of parameters specific for what type of cost is being added
-def addCost(conn, username, orgName, eventID, total, cType, args):
-    if isTreasurerOrg(conn, username, orgName):
-        curs = conn.cursor(MySQLdb.cursors.DictCursor)
-        curs.execute('START TRANSACTION')
-        curs.execute('INSERT INTO cost \
-                                  (eventID, treasurer, totalReq, cType) \
-                      VALUES      (%s, %s, %s, %s)',
-                     [eventID, username, total, cType])
-        curs.execute('SELECT last_insert_id()')
-        info = curs.fetchone()
-        id = info['last_insert_id()']
+def addCost(conn, username, eventID, total, cType, args):
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    curs.execute('START TRANSACTION')
+    curs.execute('INSERT INTO cost \
+                              (eventID, treasurer, totalReq, cType) \
+                  VALUES      (%s, %s, %s, %s)',
+                 [eventID, username, total, cType])
+    curs.execute('SELECT last_insert_id()')
+    info = curs.fetchone()
+    id = info['last_insert_id()']
 
-        # diff types of costs being added
-        # also add indiv cost total to event total cost (food or non food)
-        if cType == "Food":
-            explanation = args[0]
-            curs.execute('INSERT INTO food \
-                                      (id, explanation) \
+    # diff types of costs being added
+    # also add indiv cost total to event total cost (food or non food)
+    if cType == "Food":
+        explanation = args[0]
+        curs.execute('INSERT INTO food \
+                                  (id, explanation) \
+                      VALUES      (%s, %s)',
+                     [id, explanation])
+        curs.execute('UPDATE event \
+                      SET    foodReq=foodReq+%s \
+                      WHERE  id=%s',
+                     [total, eventID])
+        curs.execute('COMMIT')
+        return cType+" successfully added."
+    else:
+        curs.execute('UPDATE event \
+                      SET    nonFoodReq=nonFoodReq+%s \
+                      WHERE  id=%s',
+                     [total, eventID])
+        if cType == "Attendee":
+            pdf = args[0]
+            curs.execute('INSERT INTO attendee \
+                                      (id, pdf) \
                           VALUES      (%s, %s)',
-                         [id, explanation])
-            curs.execute('UPDATE event \
-                          SET    foodReq=foodReq+%s \
-                          WHERE  id=%s',
-                         [total, eventID])
+                         [id, pdf])
+            curs.execute('COMMIT')
+            return cType+" successfully added."
+        elif cType == "Formula":
+            kind, input, pdf = args
+            output = applyFormula(kind, input)
+            curs.execute('INSERT INTO formula \
+                                      (id, kind, input, output, pdf) \
+                          VALUES      (%s, %s, %s, %s, %s)',
+                         [id, kind, input, output, pdf])
+            curs.execute('COMMIT')
+            return cType+" successfully added."
+        elif cType == "Honorarium":
+            name, contract =  args
+            curs.execute('INSERT INTO honorarium \
+                                      (id, name, contract) \
+                          VALUES      (%s, %s, %s)',
+                         [id, name, contract])
+            curs.execute('COMMIT')
+            return cType+" successfully added."
+        elif cType == "Supply":
+            pdf1, pdf2, pdf3 = args
+            curs.execute('INSERT INTO supply \
+                                      (id, pdf1, pdf2, pdf3) \
+                          VALUES      (%s, %s, %s, %s)',
+                         [id, pdf1, pdf2, pdf3])
             curs.execute('COMMIT')
             return cType+" successfully added."
         else:
-            curs.execute('UPDATE event \
-                          SET    nonFoodReq=nonFoodReq+%s \
-                          WHERE  id=%s',
-                         [total, eventID])
-            if cType == "Attendee":
-                pdf = args[0]
-                curs.execute('INSERT INTO attendee \
-                                          (id, pdf) \
-                              VALUES      (%s, %s)',
-                             [id, pdf])
-                curs.execute('COMMIT')
-                return cType+" successfully added."
-            elif cType == "Formula":
-                kind, input, pdf = args
-                output = applyFormula(kind, input)
-                curs.execute('INSERT INTO formula \
-                                          (id, kind, input, output, pdf) \
-                              VALUES      (%s, %s, %s, %s, %s)',
-                             [id, kind, input, output, pdf])
-                curs.execute('COMMIT')
-                return cType+" successfully added."
-            elif cType == "Honorarium":
-                name, contract =  args
-                curs.execute('INSERT INTO honorarium \
-                                          (id, name, contract) \
-                              VALUES      (%s, %s, %s)',
-                             [id, name, contract])
-                curs.execute('COMMIT')
-                return cType+" successfully added."
-            elif cType == "Supply":
-                pdf1, pdf2, pdf3 = args
-                curs.execute('INSERT INTO supply \
-                                          (id, pdf1, pdf2, pdf3) \
-                              VALUES      (%s, %s, %s, %s)',
-                             [id, pdf1, pdf2, pdf3])
-                curs.execute('COMMIT')
-                return cType+" successfully added."
-            else:
-                curs.execute('ROLLBACK')
-                return "Was unable to add what you submitted."
-
-    else:
-        return "You are not listed as a treasurer for "+orgName+". Please \
-               contact bursarsoffice@wellesley.edu if this is a mistake."
+            curs.execute('ROLLBACK')
+            return "Was unable to add what you submitted."
 
 # delete cost
-def deleteCost(conn, username, orgName, id):
-    if isTreasurerOrg(conn, username, orgName):
-        curs = conn.cursor(MySQLdb.cursors.DictCursor)
+def deleteCost(conn, username, id):
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
 
-        # remove indiv cost from event total cost (food or non food)
-        curs.execute('SELECT * FROM cost WHERE id=%s', [id])
-        info = curs.fetchone()
-        eventID = info['eventID']
-        total = info['total']
-        cType = info['cType']
-        if cType == "Food":
-            curs.execute('UPDATE event \
-                          SET    foodReq=foodReq-%s \
-                          WHERE  id=%s',
-                         [total, eventID])
-        else:
-            curs.execute('UPDATE event \
-                          SET    nonFoodReq=nonFoodReq-%s \
-                          WHERE  id=%s',
-                         [total, eventID])
-
-        curs.execute('DELETE FROM cost WHERE id=%s', [id])
-        return "Cost successfully deleted."
+    # remove indiv cost from event total cost (food or non food)
+    curs.execute('SELECT * FROM cost WHERE id=%s', [id])
+    info = curs.fetchone()
+    eventID = info['eventID']
+    total = info['total']
+    cType = info['cType']
+    if cType == "Food":
+        curs.execute('UPDATE event \
+                      SET    foodReq=foodReq-%s \
+                      WHERE  id=%s',
+                     [total, eventID])
     else:
-        return "You are not listed as a treasurer for "+orgName+". Please \
-               contact bursarsoffice@wellesley.edu if this is a mistake."
+        curs.execute('UPDATE event \
+                      SET    nonFoodReq=nonFoodReq-%s \
+                      WHERE  id=%s',
+                     [total, eventID])
+
+    curs.execute('DELETE FROM cost WHERE id=%s', [id])
+    return "Cost successfully deleted."
 
 # update cost
-def updateCost(conn, username, orgName, id, total, args):
-    if isTreasurerOrg(conn, username, orgName):
-        curs = conn.cursor(MySQLdb.cursors.DictCursor)
-        curs.execute('START TRANSACTION')
+def updateCost(conn, username, id, total, args):
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    curs.execute('START TRANSACTION')
 
-        # adjust event total cost via diff between old indiv cost & new
-        curs.execute('SELECT * FROM cost WHERE id=%s', [id])
-        info = curs.fetchone()
-        eventID = info['eventID']
-        oldTotal = info['total']
-        cType = info['cType']
-        diff = total-oldTotal
+    # adjust event total cost via diff between old indiv cost & new
+    curs.execute('SELECT * FROM cost WHERE id=%s', [id])
+    info = curs.fetchone()
+    eventID = info['eventID']
+    oldTotal = info['total']
+    cType = info['cType']
+    diff = total-oldTotal
 
-        curs.execute('UPDATE cost \
-                      SET    treasurer=%s, \
-                             total=%s \
-                      WHERE  id=%s',
-                     [username, total, id])
+    curs.execute('UPDATE cost \
+                  SET    treasurer=%s, \
+                         total=%s \
+                  WHERE  id=%s',
+                 [username, total, id])
 
-        if cType == "Food":
-            curs.execute('UPDATE event SET foodReq=foodReq+%s WHERE id=%s',
-                         [diff, eventID])
-            explanation = args[0]
-            curs.execute('UPDATE food SET explanation=%s WHERE id=%s',
-                         [explanation, id])
-            curs.execute('COMMIT')
-            return cType+" successfully updated."
-
-        else:
-            curs.execute('UPDATE event \
-                          SET    nonFoodReq=nonFoodReq+%s \
-                          WHERE  id=%s',
-                         [diff, eventID])
-
-            if cType == "Attendee":
-                pdf = args[0]
-                curs.execute('UPDATE attendee SET pdf=%s WHERE id=%s',
-                             [pdf, id])
-                curs.execute('COMMIT')
-                return cType+" successfully updated."
-            elif cType == "Formula":
-                kind, input, pdf = args
-                output = applyFormula(kind, input)
-                curs.execute('UPDATE formula \
-                              SET    kind=%s, \
-                                     input=%s, \
-                                     output=%s \
-                                     pdf=%s \
-                              WHERE  id=%s',
-                             [kind, input, output, pdf, id])
-                curs.execute('COMMIT')
-                return cType+" successfully updated."
-            elif cType == "Honorarium":
-                name, contract =  args
-                curs.execute('UPDATE honorarium \
-                              SET    name=%s, \
-                                     contract=%s \
-                              WHERE  id=%s',
-                             [name, contract, id])
-                curs.execute('COMMIT')
-                return cType+" successfully updated."
-            elif cType == "Supply":
-                pdf1, pdf2, pdf3 = args
-                curs.execute('UPDATE supply \
-                              SET    pdf1=%s, \
-                                     pdf2=%s, \
-                                     pdf3=%s \
-                              WHERE id=%s',
-                             [pdf1, pdf2, pdf3, id])
-                curs.execute('COMMIT')
-                return cType+" successfully updated."
-            else:
-                curs.execute('ROLLBACK')
-                return "Was unable to update what you submitted."
+    if cType == "Food":
+        curs.execute('UPDATE event SET foodReq=foodReq+%s WHERE id=%s',
+                     [diff, eventID])
+        explanation = args[0]
+        curs.execute('UPDATE food SET explanation=%s WHERE id=%s',
+                     [explanation, id])
+        curs.execute('COMMIT')
+        return cType+" successfully updated."
 
     else:
-        return "You are not listed as a treasurer for "+orgName+". Please \
-               contact bursarsoffice@wellesley.edu if this is a mistake."
+        curs.execute('UPDATE event \
+                      SET    nonFoodReq=nonFoodReq+%s \
+                      WHERE  id=%s',
+                     [diff, eventID])
+
+        if cType == "Attendee":
+            pdf = args[0]
+            curs.execute('UPDATE attendee SET pdf=%s WHERE id=%s',
+                         [pdf, id])
+            curs.execute('COMMIT')
+            return cType+" successfully updated."
+        elif cType == "Formula":
+            kind, input, pdf = args
+            output = applyFormula(kind, input)
+            curs.execute('UPDATE formula \
+                          SET    kind=%s, \
+                                 input=%s, \
+                                 output=%s \
+                                 pdf=%s \
+                          WHERE  id=%s',
+                         [kind, input, output, pdf, id])
+            curs.execute('COMMIT')
+            return cType+" successfully updated."
+        elif cType == "Honorarium":
+            name, contract =  args
+            curs.execute('UPDATE honorarium \
+                          SET    name=%s, \
+                                 contract=%s \
+                          WHERE  id=%s',
+                         [name, contract, id])
+            curs.execute('COMMIT')
+            return cType+" successfully updated."
+        elif cType == "Supply":
+            pdf1, pdf2, pdf3 = args
+            curs.execute('UPDATE supply \
+                          SET    pdf1=%s, \
+                                 pdf2=%s, \
+                                 pdf3=%s \
+                          WHERE id=%s',
+                         [pdf1, pdf2, pdf3, id])
+            curs.execute('COMMIT')
+            return cType+" successfully updated."
+        else:
+            curs.execute('ROLLBACK')
+            return "Was unable to update what you submitted."
 
 # add appeal
 def addAppeal(conn, username, orgName, id, explanation, pdf):

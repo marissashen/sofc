@@ -347,6 +347,68 @@ def treasurerCost(sofc, eventID):
     else:
         return redirect(url_for('login'))
 
+# display update treaurer cost
+@app.route('/treasurerUpdateCost/<sofc>-<eventID>-<costID>')
+def displayTreasurerUpdateCost(sofc, eventID, costID):
+    conn = dbconn2.connect(DSN)
+
+    if 'CAS_USERNAME' in session:
+        username = session['CAS_USERNAME']
+        sofc = int(sofc)
+        orgName = T.orgSOFC(conn, sofc)
+        treasurer = T.isTreasurerOrg(conn, username, orgName)
+        date = datetime.datetime.now()
+        pass
+        if treasurer:
+            general, specific = T.getCost(conn, costID)
+            eventName = T.getName(conn, eventID)
+            return render_template('treasurerCost.html',
+                                   general=general,
+                                   specific=specific,
+                                   eventName=eventName)
+    else:
+        return redirect(url_for('login'))
+
+# update treaurer cost routes
+@app.route('/treasurerUpdateCost/<sofc>-<eventID>-<costID>', methods=['POST'])
+def treasurerUpdateCost(sofc, eventID, costID):
+    conn = dbconn2.connect(DSN)
+
+    if 'CAS_USERNAME' in session:
+        username = session['CAS_USERNAME']
+        orgName = T.orgSOFC(conn, sofc)
+        treasurer = T.isTreasurerOrg(conn, username, orgName)
+        if treasurer:
+            eventName, cType = T.getNameCType(conn, costID)
+            if request.form['submit'] == "update":
+                total = request.form['total']
+                if cType == "Attendee":
+                    pdf = request.form['pdf']
+                    args = [pdf]
+                elif cType == "Food":
+                    explanation = request.form['explanation']
+                    args = [explanation]
+                elif cType == "Formula":
+                    kind = request.form['kind']
+                    input = request.form['input']
+                    pdf = request.form['pdf']
+                    args = [kind, input, pdf]
+                elif cType == "Honorarium":
+                    name = request.form['name']
+                    contract = request.form['contract']
+                    args = [name, contract]
+                elif cType == "Supply":
+                    pdf1 = request.form['pdf1']
+                    pdf2 = request.form['pdf2']
+                    pdf3 = request.form['pdf3']
+                    args = [pdf1, pdf2, pdf3]
+                T.updateCost(conn, username, costID, total, args)
+            elif request.form['delete']:
+                T.deleteCost(conn, username, costID)
+            return displayTreasurerEvent(sofc, eventID)
+    else:
+        return redirect(url_for('login'))
+
 # display treaurer appeal
 @app.route('/treasurerAppeal/<sofc>-<costID>')
 def displayTreasurerAppeal(sofc, costID):
