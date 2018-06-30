@@ -71,8 +71,8 @@ def getCost(conn, costID):
                  [costID])
     general = curs.fetchone()
     cType = general['cType'].lower()
-    curs.execute('SELECT * FROM %s WHERE id=%s',
-                 [cType, costID])
+    sql = "SELECT * FROM "+cType+" WHERE id=%s"
+    curs.execute(sql, [costID])
     specific = curs.fetchone()
     return (general, specific)
 
@@ -291,7 +291,7 @@ def deleteCost(conn, username, id):
     curs.execute('SELECT * FROM cost WHERE id=%s', [id])
     info = curs.fetchone()
     eventID = info['eventID']
-    total = info['total']
+    total = info['totalReq']
     cType = info['cType']
     if cType == "Food":
         curs.execute('UPDATE event \
@@ -316,19 +316,18 @@ def updateCost(conn, username, id, total, args):
     curs.execute('SELECT * FROM cost WHERE id=%s', [id])
     info = curs.fetchone()
     eventID = info['eventID']
-    oldTotal = info['total']
+    oldTotal = info['totalReq']
     cType = info['cType']
-    diff = total-oldTotal
 
     curs.execute('UPDATE cost \
                   SET    treasurer=%s, \
-                         total=%s \
+                         totalReq=%s \
                   WHERE  id=%s',
                  [username, total, id])
 
     if cType == "Food":
-        curs.execute('UPDATE event SET foodReq=foodReq+%s WHERE id=%s',
-                     [diff, eventID])
+        curs.execute('UPDATE event SET foodReq=foodReq+%s-%s WHERE id=%s',
+                     [total, oldTotal, eventID])
         explanation = args[0]
         curs.execute('UPDATE food SET explanation=%s WHERE id=%s',
                      [explanation, id])
@@ -337,9 +336,9 @@ def updateCost(conn, username, id, total, args):
 
     else:
         curs.execute('UPDATE event \
-                      SET    nonFoodReq=nonFoodReq+%s \
+                      SET    nonFoodReq=nonFoodReq+%s-%s \
                       WHERE  id=%s',
-                     [diff, eventID])
+                     [total, oldTotal, eventID])
 
         if cType == "Attendee":
             pdf = args[0]

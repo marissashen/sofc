@@ -272,7 +272,9 @@ def treasurerEvent(sofc, eventID):
             elif act[:3] == "edc":
                 costID = int(act[4:])
                 return redirect(url_for('treasurerUpdateCost',
-                                        costID=costID))
+                                        sofc=sofc,
+                                        eventID=eventID,
+                                        costID=costID,))
             # add a new appeal to an existing cost
             elif act[:3] == "add":
                 costID = int(act[4:])
@@ -343,7 +345,9 @@ def treasurerCost(sofc, eventID):
                     pdf3 = request.form['pdf3']
                     args = [pdf1, pdf2, pdf3]
                 T.addCost(conn, username, orgName, eventID, total, cType, args)
-                return displayTreasurerEvent(sofc, eventID)
+                return redirect(url_for('displayTreasurerEvent',
+                                        sofc=sofc,
+                                        eventID=eventID))
     else:
         return redirect(url_for('login'))
 
@@ -358,11 +362,12 @@ def displayTreasurerUpdateCost(sofc, eventID, costID):
         orgName = T.orgSOFC(conn, sofc)
         treasurer = T.isTreasurerOrg(conn, username, orgName)
         date = datetime.datetime.now()
-        pass
         if treasurer:
+            costID = int(costID)
+            eventID = int(eventID)
             general, specific = T.getCost(conn, costID)
             eventName = T.getName(conn, eventID)
-            return render_template('treasurerCost.html',
+            return render_template('treasurerUpdateCost.html',
                                    general=general,
                                    specific=specific,
                                    eventName=eventName)
@@ -379,8 +384,10 @@ def treasurerUpdateCost(sofc, eventID, costID):
         orgName = T.orgSOFC(conn, sofc)
         treasurer = T.isTreasurerOrg(conn, username, orgName)
         if treasurer:
+            costID = int(costID)
             eventName, cType = T.getNameCType(conn, costID)
-            if request.form['submit'] == "update":
+            act = request.form['submit']
+            if act == "update":
                 total = request.form['total']
                 if cType == "Attendee":
                     pdf = request.form['pdf']
@@ -403,7 +410,7 @@ def treasurerUpdateCost(sofc, eventID, costID):
                     pdf3 = request.form['pdf3']
                     args = [pdf1, pdf2, pdf3]
                 T.updateCost(conn, username, costID, total, args)
-            elif request.form['delete']:
+            elif act == "delete":
                 T.deleteCost(conn, username, costID)
             return displayTreasurerEvent(sofc, eventID)
     else:
