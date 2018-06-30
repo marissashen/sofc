@@ -104,9 +104,9 @@ def eventCosts(conn, eventID):
     curs.execute('SELECT * \
                   FROM   cost \
                   WHERE  eventID=%s \
-                         AND id IN (SELECT id \
-                                    FROM   appeal \
-                                    WHERE  cost.id=appeal.id)',
+                         AND id NOT IN (SELECT id \
+                                        FROM   appeal \
+                                        WHERE  cost.id=appeal.id)',
                  [eventID])
     info = curs.fetchall()
     return info

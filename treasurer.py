@@ -209,7 +209,7 @@ def addCost(conn, username, orgName, eventID, total, cType, args):
         curs = conn.cursor(MySQLdb.cursors.DictCursor)
         curs.execute('START TRANSACTION')
         curs.execute('INSERT INTO cost \
-                                  (eventID, treasurer, total, cType) \
+                                  (eventID, treasurer, totalReq, cType) \
                       VALUES      (%s, %s, %s, %s)',
                      [eventID, username, total, cType])
         curs.execute('SELECT last_insert_id()')

@@ -243,6 +243,8 @@ def treasurerEvent(sofc, eventID):
         orgName = T.orgSOFC(conn, sofc)
         treasurer = T.isTreasurerOrg(conn, username, orgName)
         deadline = session['deadline']
+        sofc = int(sofc)
+        eventID = int(eventID)
         if treasurer:
             act = request.form['submit']
 
@@ -253,33 +255,32 @@ def treasurerEvent(sofc, eventID):
                 eType = request.form['eType']
                 eventDate = request.form['eventDate']
                 students = request.form['students']
-                eventID = int(eventID)
                 T.updateEvent(conn, username, eventID, orgName, eventName,
                               purpose, eventDate, deadline, eType, students)
                 return displayTreasurerEvent(sofc, eventID)
             # delete event
-            if act == "delete":
+            elif act == "delete":
                 T.deleteEvent(conn, orgName, eventID)
                 return redirect(url_for('treasurerOrg',
                                         sofc=sofc))
             # add a new cost to an existing event
-            if act == "cost":
+            elif act == "cost":
                 return redirect(url_for('treasurerCost',
                                         sofc=sofc,
                                         eventID=eventID))
             # edit an existing cost
-            if act[:3] == "edc":
+            elif act[:3] == "edc":
                 costID = int(act[4:])
                 return redirect(url_for('treasurerUpdateCost',
                                         costID=costID))
             # add a new appeal to an existing cost
-            if act[:3] == "add":
+            elif act[:3] == "add":
                 costID = int(act[4:])
                 return redirect(url_for('treasurerAppeal',
                                         sofc=sofc,
                                         costID=costID))
             # edit an existing appeal
-            if act[:3] == "eda":
+            elif act[:3] == "eda":
                 costID = int(act[4:])
                 return redirect(url_for('treasurerUpdateAppeal',
                                         sofc=sofc,
@@ -327,16 +328,16 @@ def treasurerCost(sofc, eventID):
                 elif cType == "Food":
                     explanation = request.form['explanation']
                     args = [explanation]
-                elif cType = "Formula":
+                elif cType == "Formula":
                     kind = request.form['kind']
                     input = request.form['input']
                     pdf = request.form['pdf']
                     args = [kind, input, pdf]
-                elif cType = "Honorarium":
+                elif cType == "Honorarium":
                     name = request.form['name']
                     contract = request.form['contract']
                     args = [name, contract]
-                elif cType = "Supply":
+                elif cType == "Supply":
                     pdf1 = request.form['pdf1']
                     pdf2 = request.form['pdf2']
                     pdf3 = request.form['pdf3']
