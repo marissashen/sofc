@@ -4,8 +4,9 @@
 
 <div class="container" style="margin-top:80px">
 
-  <h4>Add Cost for {{eventName}}'s</h4>
+  <h4>Add Cost for {{eventName}}</h4>
   <form method="POST" action="">
+    <div id="cost">
     <div class="form-group">
       <label for="cType">Cost Type:</label>
       <select class="form-control" name="cType" id="cType"
@@ -19,8 +20,6 @@
       </select>
     </div>
 
-    <!-- PUT AJAX HERE FOR REST OF COST OPTIONS !! -->
-
     <div class="form-group">
       <label for="total">Total Cost Requested:</label>
       <input type="number" class="form-control" id="total" name="total"
@@ -31,5 +30,123 @@
       Add</button>
   </form>
 </div>
+    <!-- AJAX HERE FOR REST OF COST OPTIONS !! -->
+    <script src="//code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script>
+      $(function() {
+        // function to figure out what to add to rest of form
+        function updateForm() {
+          var cType = $("cType").val();
+          console.log(cType);
+
+          if (cType === "Attendee") {
+            var html = `<div class="form-group">
+                          <label for="pdf">PDF Upload of Student Justification:
+                            </label>
+                          <input type="file" class="form-control-file"
+                                  id="pdf" accept="application/pdf"
+                                  aria-describedby="pdfHelp" required>
+                          <small id="pdfHelp" class="form-text text-muted">
+                                 You can only upload PDF documents.</small>
+                        </div>`;
+          }
+          else if (cType === "Food") {
+            var html = `<div class="form-group">
+                          <label for="explanation">Food Explanation:</label>
+                          <textarea class="form-control" id="explanation"
+                                    rows="4"
+                                    placeholder="Enter food explanation here"
+                                    name="explanation" required></textarea>
+                        </div>`;
+          }
+          else if (cType === "Formula") {
+            var html = `<div class="form-group">
+                          <label for="kind">Formula Kind:</label>
+                            <select class="form-control" name="kind" id="kind"
+                                    required="required">
+                            <option disabled selected value="">
+                                    Choose a formula  </option>
+                            <option value="Car"> Car </option>
+                            <option value="Crowd Control"> Crowd Control
+                              </option>
+                            <option value="Custodial"> Custodial </option>
+                            <option value="Eboard"> Eboard </option>
+                            <option value="Open Meeting"> Open Meeting </option>
+                            <option value="Programs"> Programs </option>
+                            <option value="Publicity"> Publicity </option>
+                            <option value="Speaker Meal"> Speaker Meal </option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                          <label for="input">Input for Formula:</label>
+                          <input type="number" class="form-control" id="input"
+                                 name="input" required>
+                        </div>
+                        <div class="form-group">
+                          <label for="pdf">PDF Upload of Student Justification:
+                            </label>
+                          <input type="file" class="form-control-file"
+                                 id="pdf" accept="application/pdf"
+                                 aria-describedby="pdfHelp">
+                          <small id="pdfHelp" class="form-text text-muted">
+                                 You can only upload PDF documents.</small>
+                        </div>`;
+          }
+          else if (cType === "Honorarium") {
+            var html = `<div class="form-group">
+                          <label for="name">Name:</label>
+                          <input type="text" class="form-control" id="name"
+                                 placeholder="Enter name of vendor"
+                                 name="name" required>
+                        </div>
+                        <div class="form-group">
+                          <label for="contract">PDF Upload of Contract:</label>
+                          <input type="file" class="form-control-file"
+                                 id="contract" accept="application/pdf"
+                                 aria-describedby="pdfHelp" required>
+                          <small id="pdfHelp" class="form-text text-muted">
+                                 You can only upload PDF documents.</small>
+                        </div>`;
+          }
+          else if (cType === "Supply") {
+            var html = `<div class="form-group">
+                          <label for="pdf1">PDF Upload of Proof of Cost (1):
+                            </label>
+                          <input type="file" class="form-control-file"
+                                 id="pdf1" accept="application/pdf"
+                                 aria-describedby="pdfHelp" required>
+                          <small id="pdfHelp" class="form-text text-muted">
+                                 You can only upload PDF documents.</small>
+                        </div>
+                        <div class="form-group">
+                          <label for="pdf2">PDF Upload of Proof of Cost (2):
+                            </label>
+                          <input type="file" class="form-control-file"
+                                 id="pdf2" accept="application/pdf"
+                                 aria-describedby="pdfHelp">
+                          <small id="pdfHelp" class="form-text text-muted">
+                                 You can only upload PDF documents.</small>
+                        </div>
+                        <div class="form-group">
+                          <label for="pdf3">PDF Upload of Proof of Cost (3):
+                            </label>
+                          <input type="file" class="form-control-file"
+                                 id="pdf3" accept="application/pdf"
+                                 aria-describedby="pdfHelp">
+                          <small id="pdfHelp" class="form-text text-muted">
+                                 You can only upload PDF documents.</small>
+                        </div>`;
+          }
+          else {
+            var html = "";
+          }
+          $('#cost').append(html);
+        }
+      })
+
+      dropdown.cType.on('change', function() {
+          updateForm();
+      })
+      </script>
 
 {% endblock %}

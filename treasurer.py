@@ -97,6 +97,15 @@ def getFunding(conn, deadline):
     info = curs.fetchone()
     return info
 
+# get event id of a cost
+def getEventID(conn, costID):
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    curs.execute('SELECT eventID FROM cost WHERE id=%s',
+                 [costID])
+    info = curs.fetchone()
+    eventID = info['eventID']
+    return eventID
+
 # check if event name already exists for org in this deadline
 def dupName(conn, orgName, eventName, fundingDeadline):
     curs = conn.cursor(MySQLdb.cursors.DictCursor)

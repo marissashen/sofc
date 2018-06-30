@@ -92,8 +92,8 @@ CREATE TABLE food
 
 CREATE TABLE formula
 	(id INT NOT NULL PRIMARY KEY,
-	 kind ENUM('car', 'crowd control', 'custodial', 'eboard', 'open meeting',
-		 'programs', 'publicity', 'speaker meal') NOT NULL,
+	 kind ENUM('Car', 'Crowd Control', 'Custodial', 'Eboard', 'Open Meeting',
+		 'Programs', 'Publicity', 'Speaker Meal') NOT NULL,
  	 input DECIMAL(9,2) NOT NULL,
 	 output DECIMAL(9,2) NOT NULL,
 	 pdf BLOB,

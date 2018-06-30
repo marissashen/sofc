@@ -9,7 +9,7 @@
     <div class="form-group">
       <label for="explanation">Appeal Explanation:</label>
       <textarea class="form-control" id="explanation" rows="6"
-                placeholder="Enter appeal explanation here"
+                value={{appeal.explanation}}
                 name="explanation" required></textarea>
     </div>
 
@@ -21,8 +21,10 @@
              You can only upload PDF documents.</small>
     </div>
 
-    <button type="submit" name="submit" class="btn btn-primary" value="add">
-      Add Appeal</button>
+    <button type="submit" name="submit" class="btn btn-primary" value="update">
+      Update</button>
+    <button type="submit" name="submit" class="btn btn-primary" value="delete">
+      Delete</button>
   </form>
 </div>
 
