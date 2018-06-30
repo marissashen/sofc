@@ -325,24 +325,30 @@ def treasurerCost(sofc, eventID):
                 total = request.form['total']
                 cType = request.form['cType']
                 if cType == "Attendee":
-                    pdf = request.form['pdf']
-                    args = [pdf]
+                    pdf = request.files['pdf']
+                    filename = secure_filename(str(eventID)+".pdf")
+                    pathname = "files/"+filename
+                    pdf.save(pathname)
+                    args = [pathname]
                 elif cType == "Food":
                     explanation = request.form['explanation']
                     args = [explanation]
                 elif cType == "Formula":
                     kind = request.form['kind']
                     input = request.form['input']
-                    pdf = request.form['pdf']
+                    pdf = request.form.get('pdf', None)
                     args = [kind, input, pdf]
                 elif cType == "Honorarium":
                     name = request.form['name']
-                    contract = request.form['contract']
+                    contract = request.files['contract']
                     args = [name, contract]
                 elif cType == "Supply":
-                    pdf1 = request.form['pdf1']
-                    pdf2 = request.form['pdf2']
-                    pdf3 = request.form['pdf3']
+                    pdf1 = request.files['pdf1']
+                    filename1 = secure_filename(str(eventID)+"pdf1.pdf")
+                    pathname1 = "files/"+filename1
+                    pdf1.save(pathname1)
+                    pdf2 = request.form.get('pdf2', None)
+                    pdf3 = request.form.get('pdf3', None)
                     args = [pdf1, pdf2, pdf3]
                 T.addCost(conn, username, orgName, eventID, total, cType, args)
                 return redirect(url_for('displayTreasurerEvent',
@@ -639,7 +645,7 @@ def adminOrgs():
                 name = request.form['name']
                 classification = request.form['classification']
                 sofc = request.form['sofc']
-                profit = request.form['profit']
+                profit = request.form.get('profit', None)
                 A.addOrg(conn, name, classification, sofc, profit)
             # deleting an org or revoking sofc funding status
             if act == "delete":
@@ -687,7 +693,7 @@ def updateOrg(sofc):
             newName = request.form['name']
             classification = request.form['classification']
             newSOFC = request.form['sofc']
-            profit = request.form['profit']
+            profit = request.form.get('profit', None)
             canApply = int(request.form['canApply'])
             A.updateOrg(conn, oldName, newName, classification, sofc, newSOFC,
                         profit, canApply)

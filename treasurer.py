@@ -257,10 +257,16 @@ def addCost(conn, username, eventID, total, cType, args):
         elif cType == "Formula":
             kind, input, pdf = args
             output = applyFormula(kind, input)
-            curs.execute('INSERT INTO formula \
-                                      (id, kind, input, output, pdf) \
-                          VALUES      (%s, %s, %s, %s, %s)',
-                         [id, kind, input, output, pdf])
+            if pdf:
+                curs.execute('INSERT INTO formula \
+                                          (id, kind, input, output, pdf) \
+                              VALUES      (%s, %s, %s, %s, %s)',
+                             [id, kind, input, output, pdf])
+            else:
+                curs.execute('INSERT INTO formula \
+                                          (id, kind, input, output) \
+                              VALUES      (%s, %s, %s, %s)',
+                             [id, kind, input, output])
             curs.execute('COMMIT')
             return cType+" successfully added."
         elif cType == "Honorarium":
