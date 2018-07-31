@@ -209,9 +209,9 @@ def applyFormula(kind, input):
     elif kind == "speaker meal":
         return input*15.00
 
-# add cost
-# args is a list of parameters specific for what type of cost is being added
-def addCost(conn, username, eventID, total, cType, args):
+# add cost part 1
+# need to get cost id of new cost for pdf naming
+def addCost1(conn, username, eventID, total, cType):
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
     curs.execute('START TRANSACTION')
     curs.execute('INSERT INTO cost \
@@ -221,7 +221,12 @@ def addCost(conn, username, eventID, total, cType, args):
     curs.execute('SELECT last_insert_id()')
     info = curs.fetchone()
     id = info['last_insert_id()']
+    return costID
 
+# add cost part 2
+# args is a list of parameters specific for what type of cost is being added
+def addCost2(conn, costID, cType, args):
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
     # diff types of costs being added
     # also add indiv cost total to event total cost (food or non food)
     if cType == "Food":
@@ -275,9 +280,19 @@ def addCost(conn, username, eventID, total, cType, args):
         elif cType == "Supply":
             pdf1, pdf2, pdf3 = args
             curs.execute('INSERT INTO supply \
-                                      (id, pdf1, pdf2, pdf3) \
-                          VALUES      (%s, %s, %s, %s)',
-                         [id, pdf1, pdf2, pdf3])
+                                      (id, pdf1) \
+                          VALUES      (%s, %s)',
+                         [id, pdf1])
+            if pdf2:
+                curs.execute('UPDATE supply \
+                              SET    pdf2=%s \
+                              WHERE  id=%s',
+                             [pdf2, id])
+            if pdf3:
+                curs.execute('UPDATE supply \
+                              SET    pdf3=%s \
+                              WHERE  id=%s',
+                             [pdf3, id])
             curs.execute('COMMIT')
             return cType+" successfully added."
         else:

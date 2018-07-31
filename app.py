@@ -341,9 +341,10 @@ def treasurerCost(sofc, eventID):
             if request.form['submit'] == "add":
                 total = request.form['total']
                 cType = request.form['cType']
+                costID = T.addCost1(conn, username, eventID, total, cType)
                 if cType == "Attendee":
                     pdf = request.files['pdf']
-                    filename = secure_filename(str(eventID)+".pdf")
+                    filename = secure_filename(str(costID)+".pdf")
                     pathname = "files/"+filename
                     pdf.save(pathname)
                     args = [pathname]
@@ -354,20 +355,35 @@ def treasurerCost(sofc, eventID):
                     kind = request.form['kind']
                     input = request.form['input']
                     pdf = request.form.get('pdf', None)
-                    args = [kind, input, pdf]
+                    pathname = None
+                    if pdf:
+                        filename = secure_filename(str(costID)+".pdf")
+                        pathname = "files/"+filename
+                        pdf.save(pathname)
+                    args = [kind, input, None]
                 elif cType == "Honorarium":
                     name = request.form['name']
                     contract = request.files['contract']
                     args = [name, contract]
                 elif cType == "Supply":
                     pdf1 = request.files['pdf1']
-                    filename1 = secure_filename(str(eventID)+"pdf1.pdf")
+                    filename1 = secure_filename(str(costID)+"pdf1.pdf")
                     pathname1 = "files/"+filename1
                     pdf1.save(pathname1)
+                    pathname2 = None
+                    pathname3 = None
                     pdf2 = request.form.get('pdf2', None)
+                    if pdf2:
+                        filename2 = secure_filename(str(costID)+"pdf2.pdf")
+                        pathname2 = "files/"+filename2
+                        pdf.save(pathname2)
                     pdf3 = request.form.get('pdf3', None)
-                    args = [pdf1, pdf2, pdf3]
-                T.addCost(conn, username, eventID, total, cType, args)
+                    if pdf3:
+                        filename3 = secure_filename(str(costID)+"pdf3.pdf")
+                        pathname3 = "files/"+filename3
+                        pdf.save(pathname3)
+                    args = [pathname1, pathname2, pathname3]
+                T.addCost2(conn, costID, cType, args)
                 return redirect(url_for('displayTreasurerEvent',
                                         sofc=sofc,
                                         eventID=eventID))
