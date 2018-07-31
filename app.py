@@ -163,10 +163,13 @@ def displayTreasurerOrg(sofc):
         funding = T.getFunding(conn, deadline)
         orgName = T.orgSOFC(conn, sofc)
         treasurer = T.isTreasurerOrg(conn, username, orgName)
+        date = datetime.datetime.now()
+        canEdit = date<=deadline
         if treasurer:
             deadlineList = G.allDeadlines(conn)
             eventList = G.allEventsNow(conn, orgName, deadline)
             return render_template('treasurerOrg.html',
+                                   canEdit=canEdit,
                                    username=username,
                                    orgName=orgName,
                                    funding=funding,
@@ -182,10 +185,12 @@ def treasurerOrg(sofc):
 
     if 'CAS_USERNAME' in session:
         username = session['CAS_USERNAME']
+        deadline = session['deadline']
         orgName = T.orgSOFC(conn, sofc)
         treasurer = T.isTreasurerOrg(conn, username, orgName)
-        deadline = session['deadline']
         funding = T.getFunding(conn, deadline)
+        date = datetime.datetime.now()
+        canEdit = date<=deadline
         if treasurer:
             act = request.form['submit']
 
@@ -220,13 +225,17 @@ def displayTreasurerEvent(sofc, eventID):
 
     if 'CAS_USERNAME' in session:
         username = session['CAS_USERNAME']
+        deadline = session['deadline']
         orgName = T.orgSOFC(conn, sofc)
         treasurer = T.isTreasurerOrg(conn, username, orgName)
+        date = datetime.datetime.now()
+        canEdit = date<=deadline
         if treasurer:
             event = G.eventInfo(conn, eventID)
             costList = G.eventCosts(conn, eventID)
             costAppealList = G.eventCostsAppeals(conn, eventID)
             return render_template('treasurerEvent.html',
+                                   canEdit=canEdit,
                                    event=event,
                                    costList=costList,
                                    costAppealList=costAppealList)
@@ -240,12 +249,15 @@ def treasurerEvent(sofc, eventID):
 
     if 'CAS_USERNAME' in session:
         username = session['CAS_USERNAME']
+        deadline = session['deadline']
         orgName = T.orgSOFC(conn, sofc)
         treasurer = T.isTreasurerOrg(conn, username, orgName)
-        deadline = session['deadline']
-        sofc = int(sofc)
-        eventID = int(eventID)
+        date = datetime.datetime.now()
+        canEdit = date<=deadline
         if treasurer:
+            sofc = int(sofc)
+            eventID = int(eventID)
+            oldEventName = T.getName(conn, eventID)
             act = request.form['submit']
 
             # update event
@@ -255,8 +267,9 @@ def treasurerEvent(sofc, eventID):
                 eType = request.form['eType']
                 eventDate = request.form['eventDate']
                 students = request.form['students']
-                T.updateEvent(conn, username, eventID, orgName, eventName,
-                              purpose, eventDate, deadline, eType, students)
+                T.updateEvent(conn, username, eventID, orgName, oldEventName,
+                              eventName, purpose, eventDate, deadline, eType,
+                              students)
                 return displayTreasurerEvent(sofc, eventID)
             # delete event
             elif act == "delete":
@@ -297,14 +310,16 @@ def displayTreasurerCost(sofc, eventID):
 
     if 'CAS_USERNAME' in session:
         username = session['CAS_USERNAME']
-        sofc = int(sofc)
+        deadline = session['deadline']
         orgName = T.orgSOFC(conn, sofc)
         treasurer = T.isTreasurerOrg(conn, username, orgName)
         date = datetime.datetime.now()
-        pass
+        canEdit = date<=deadline
         if treasurer:
+            sofc = int(sofc)
             eventName = T.getName(conn, eventID)
             return render_template('treasurerCost.html',
+                                   canEdit=canEdit,
                                    eventName=eventName)
     else:
         return redirect(url_for('login'))
@@ -316,12 +331,14 @@ def treasurerCost(sofc, eventID):
 
     if 'CAS_USERNAME' in session:
         username = session['CAS_USERNAME']
+        deadline = session['deadline']
         orgName = T.orgSOFC(conn, sofc)
         treasurer = T.isTreasurerOrg(conn, username, orgName)
-        pass
+        date = datetime.datetime.now()
+        canEdit = date<=deadline
         if treasurer:
+            eventID = int(eventID)
             if request.form['submit'] == "add":
-                eventID = int(eventID)
                 total = request.form['total']
                 cType = request.form['cType']
                 if cType == "Attendee":
@@ -350,7 +367,7 @@ def treasurerCost(sofc, eventID):
                     pdf2 = request.form.get('pdf2', None)
                     pdf3 = request.form.get('pdf3', None)
                     args = [pdf1, pdf2, pdf3]
-                T.addCost(conn, username, orgName, eventID, total, cType, args)
+                T.addCost(conn, username, eventID, total, cType, args)
                 return redirect(url_for('displayTreasurerEvent',
                                         sofc=sofc,
                                         eventID=eventID))
@@ -364,16 +381,19 @@ def displayTreasurerUpdateCost(sofc, eventID, costID):
 
     if 'CAS_USERNAME' in session:
         username = session['CAS_USERNAME']
-        sofc = int(sofc)
+        deadline = session['deadline']
         orgName = T.orgSOFC(conn, sofc)
         treasurer = T.isTreasurerOrg(conn, username, orgName)
         date = datetime.datetime.now()
+        canEdit = date<=deadline
         if treasurer:
+            sofc = int(sofc)
             costID = int(costID)
             eventID = int(eventID)
             general, specific = T.getCost(conn, costID)
             eventName = T.getName(conn, eventID)
             return render_template('treasurerUpdateCost.html',
+                                   canEdit=canEdit,
                                    general=general,
                                    specific=specific,
                                    eventName=eventName)
@@ -387,11 +407,14 @@ def treasurerUpdateCost(sofc, eventID, costID):
 
     if 'CAS_USERNAME' in session:
         username = session['CAS_USERNAME']
+        deadline = session['deadline']
         orgName = T.orgSOFC(conn, sofc)
         treasurer = T.isTreasurerOrg(conn, username, orgName)
+        date = datetime.datetime.now()
+        canEdit = date<=deadline
         if treasurer:
             costID = int(costID)
-            eventName, cType = T.getNameCType(conn, costID)
+            eventID = int(eventID)
             act = request.form['submit']
             if act == "update":
                 total = request.form['total']
@@ -418,7 +441,9 @@ def treasurerUpdateCost(sofc, eventID, costID):
                 T.updateCost(conn, username, costID, total, args)
             elif act == "delete":
                 T.deleteCost(conn, username, costID)
-            return displayTreasurerEvent(sofc, eventID)
+            return redirect(url_for('treasurerEvent',
+                                    sofc=sofc,
+                                    eventID=eventID))
     else:
         return redirect(url_for('login'))
 
@@ -429,12 +454,15 @@ def displayTreasurerAppeal(sofc, costID):
 
     if 'CAS_USERNAME' in session:
         username = session['CAS_USERNAME']
+        deadline = session['deadline']
         orgName = T.orgSOFC(conn, sofc)
         treasurer = T.isTreasurerOrg(conn, username, orgName)
         date = datetime.datetime.now()
+        canEdit = date<=deadline
         if treasurer:
             (eventName, cType) = T.getNameCType(conn, costID)
             return render_template('treasurerAppeal.html',
+                                   canEdit=canEdit,
                                    eventName=eventName,
                                    cType=cType)
     else:
@@ -447,15 +475,21 @@ def treasurerAppeal(sofc, costID):
 
     if 'CAS_USERNAME' in session:
         username = session['CAS_USERNAME']
+        deadline = session['deadline']
         orgName = T.orgSOFC(conn, sofc)
         treasurer = T.isTreasurerOrg(conn, username, orgName)
+        date = datetime.datetime.now()
+        canEdit = date<=deadline
         if treasurer:
+            costID = int(costID)
             if request.form['submit'] == "add":
-                costID = int(constID)
                 explanation = request.form['explanation']
-                pdf = request.form['pdf']
-                T.addAppeal(conn, username, orgName, costID, explanation, pdf)
-                return
+                pdf = request.form.get('pdf', None)
+                T.addAppeal(conn, username, costID, explanation, pdf)
+                eventID = T.getEventID(conn, costID)
+                return redirect(url_for('treasurerEvent',
+                                        sofc=sofc,
+                                        eventID=eventID))
     else:
         return redirect(url_for('login'))
 
@@ -466,14 +500,17 @@ def displayTreasurerUpdateAppeal(sofc, costID):
 
     if 'CAS_USERNAME' in session:
         username = session['CAS_USERNAME']
+        deadline = session['deadline']
         orgName = T.orgSOFC(conn, sofc)
         treasurer = T.isTreasurerOrg(conn, username, orgName)
         date = datetime.datetime.now()
+        canEdit = date<=deadline
         if treasurer:
-            (eventName, cType) = T.getNameCType(conn, costID)
+            costID = int(costID)
+            info = T.getNameCTypeUpdate(conn, costID)
             return render_template('treasurerUpdateAppeal.html',
-                                   eventName=eventName,
-                                   cType=cType)
+                                   canEdit=canEdit,
+                                   info=info)
     else:
         return redirect(url_for('login'))
 
@@ -484,21 +521,25 @@ def treasurerUpdateAppeal(sofc, costID):
 
     if 'CAS_USERNAME' in session:
         username = session['CAS_USERNAME']
+        deadline = session['deadline']
         orgName = T.orgSOFC(conn, sofc)
         treasurer = T.isTreasurerOrg(conn, username, orgName)
+        date = datetime.datetime.now()
+        canEdit = date<=deadline
         if treasurer:
-            if request.form['submit'] == "update":
-                costID = int(constID)
+            costID = int(costID)
+            eventID = T.getEventID(conn, costID)
+            act = request.form['submit']
+            if act == "update":
                 explanation = request.form['explanation']
-                pdf = request.form['pdf']
-                T.updateAppeal(conn, username, orgName, costID, explanation,
-                               pdf)
-                return displayTreasurerUpdateAppeal(sofc, costID)
-            if request.form['submit'] == "delete":
-                costID = int(constID)
-                T.deleteAppeal(conn, username, orgName, costID)
+                pdf = request.form.get('pdf', None)
+                T.updateAppeal(conn, username, costID, explanation, pdf)
+            elif act == "delete":
+                T.deleteAppeal(conn, username, costID)
                 eventID = T.getEventID(conn, costID)
-                return displayTreasurerCost(eventID)
+            return redirect(url_for('treasurerEvent',
+                                    sofc=sofc,
+                                    eventID=eventID))
     else:
         return redirect(url_for('login'))
 

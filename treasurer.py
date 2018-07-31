@@ -77,17 +77,16 @@ def getCost(conn, costID):
     return (general, specific)
 
 # return name of event given cost id
-def getNameCType(conn, costID):
+def getNameCTypeUpdate(conn, costID):
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
-    curs.execute('SELECT eventName, cType \
-                  FROM   event, cost \
+    curs.execute('SELECT eventName, cType, appeal.*  \
+                  FROM   event, cost, appeal \
                   WHERE  cost.id=%s \
-                         AND cost.eventID=event.ID',
-                 [costID])
+                         AND cost.eventID=event.ID \
+                         AND appeal.id=%s',
+                 [costID, costID])
     info = curs.fetchone()
-    eventName = info['eventName']
-    cType = info['cType']
-    return (eventName, cType)
+    return info
 
 # return deadline closest to given current date
 def getDeadline(conn, date):
@@ -133,27 +132,21 @@ def dupName(conn, orgName, eventName, fundingDeadline):
 # add new event
 def addEvent(conn, username, orgName, eventName, purpose, eventDate, fundingDeadline,
              eType, students):
-    # check if user is treaurer of org creating event for
-    if isTreasurerOrg(conn, username, orgName):
-        curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
 
-        # check another event with same name hasn't been made already
-        if dupName(conn, orgName, eventName, fundingDeadline):
-            return "An event with the name "+eventName+" has already been \
-                   submitted. Please use another name."
+    # check another event with same name hasn't been made already
+    if dupName(conn, orgName, eventName, fundingDeadline):
+        return "An event with the name "+eventName+" has already been \
+               submitted. Please use another name."
 
-        # add event
-        curs.execute('INSERT INTO event \
-                                  (treasurer, orgName, eventName, purpose, \
-                                   eventDate, fundingDeadline, eType, students) \
-                      VALUES      (%s, %s, %s, %s, %s, %s, %s, %s)',
-                     [username, orgName, eventName, purpose, eventDate,
-                      fundingDeadline, eType, students])
-        return "Event successfully added. Please add appropriate event costs."
-
-    else:
-        return "You are not listed as a treasurer for "+orgName+". Please \
-               contact bursarsoffice@wellesley.edu if this is a mistake."
+    # add event
+    curs.execute('INSERT INTO event \
+                              (treasurer, orgName, eventName, purpose, \
+                               eventDate, fundingDeadline, eType, students) \
+                  VALUES      (%s, %s, %s, %s, %s, %s, %s, %s)',
+                 [username, orgName, eventName, purpose, eventDate,
+                  fundingDeadline, eType, students])
+    return "Event successfully added. Please add appropriate event costs."
 
 # delete event
 def deleteEvent(conn, orgName, id):
@@ -162,35 +155,37 @@ def deleteEvent(conn, orgName, id):
     return "Event successfully deleted."
 
 # update event
-def updateEvent(conn, username, id, orgName, eventName, purpose, eventDate,
-                fundingDeadline, eType, students):
+def updateEvent(conn, username, id, orgName, oldEventName, newEventName,
+                purpose, eventDate, fundingDeadline, eType, students):
 
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
 
-    # check another event with same name hasn't been made already
-    curs.execute('SELECT * \
-                  FROM   event \
-                  WHERE  orgName=%s \
-                         AND eventName=%s \
-                         AND fundingDeadline=%s',
-                 [orgName, eventName, fundingDeadline])
-    info = curs.fetchone()
-    if info is not None:
-        return "This event name already exists for this deadline."
+    if oldEventName==newEventName:
+        # check another event with same name hasn't been made already
+        curs.execute('SELECT * \
+                      FROM   event \
+                      WHERE  orgName=%s \
+                             AND eventName=%s \
+                             AND fundingDeadline=%s',
+                     [orgName, eventName, fundingDeadline])
+        info = curs.fetchone()
+        if info is not None:
+            return "This event name already exists for this deadline."
 
-    # add event
-    curs.execute('UPDATE event \
-                  SET    treasurer=%s, \
-                         eventName=%s, \
-                         purpose=%s, \
-                         eventDate=%s, \
-                         fundingDeadline=%s, \
-                         eType=%s, \
-                         students=%s \
-                  WHERE  id=%s',
-                 [username, eventName, purpose, eventDate, fundingDeadline,
-                 eType, students, id])
-    return "Event successfully updated. Please add appropriate event costs."
+    else:
+        # add event
+        curs.execute('UPDATE event \
+                      SET    treasurer=%s, \
+                             eventName=%s, \
+                             purpose=%s, \
+                             eventDate=%s, \
+                             fundingDeadline=%s, \
+                             eType=%s, \
+                             students=%s \
+                      WHERE  id=%s',
+                     [username, eventName, purpose, eventDate, fundingDeadline,
+                      eType, students, id])
+        return "Event successfully updated. Please add appropriate event costs."
 
 # return cost given formula being used & input
 def applyFormula(kind, input):
@@ -388,39 +383,40 @@ def updateCost(conn, username, id, total, args):
             return "Was unable to update what you submitted."
 
 # add appeal
-def addAppeal(conn, username, orgName, id, explanation, pdf):
-    if isTreasurerOrg(conn, username, orgName):
-        curs = conn.cursor(MySQLdb.cursors.DictCursor)
+def addAppeal(conn, username, id, explanation, pdf):
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    if pdf:
         curs.execute('INSERT INTO appeal \
-                                  (treasurer, explanation, pdf) \
+                                  (id, treasurer, explanation, pdf) \
                       VALUES      (%s, %s, %s, %s)',
-                     [username, explanation, pdf])
-        return "Appeal successfully added."
+                     [id, username, explanation, pdf])
     else:
-        return "You are not listed as a treasurer for "+orgName+". Please \
-               contact bursarsoffice@wellesley.edu if this is a mistake."
+        curs.execute('INSERT INTO appeal \
+                                  (id, treasurer, explanation) \
+                      VALUES      (%s, %s, %s)',
+                      [id, username, explanation])
+    return "Appeal successfully added."
 
 # delete appeal
-def deleteAppeal(conn, username, orgName, id):
-    if isTreasurerOrg(conn, username, orgName):
-        curs = conn.cursor(MySQLdb.cursors.DictCursor)
-        curs.execute('DELETE FROM appeal WHERE id=%s', [id])
-        return "Appeal successfully deleted."
-    else:
-        return "You are not listed as a treasurer for "+orgName+". Please \
-               contact bursarsoffice@wellesley.edu if this is a mistake."
+def deleteAppeal(conn, username, id):
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    curs.execute('DELETE FROM appeal WHERE id=%s', [id])
+    return "Appeal successfully deleted."
 
 # update appeal
-def updateAppeal(conn, username, orgName, id, explanation, pdf):
-    if isTreasurerOrg(conn, username, orgName):
-        curs = conn.cursor(MySQLdb.cursors.DictCursor)
+def updateAppeal(conn, username, id, explanation, pdf):
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    if pdf:
         curs.execute('UPDATE appeal \
                       SET    treasurer=%s, \
                              explanation=%s, \
                              pdf=%s \
                       WHERE id=%s',
                      [username, explanation, pdf, id])
-        return "Appeal successfully updated."
     else:
-        return "You are not listed as a treasurer for "+orgName+". Please \
-               contact bursarsoffice@wellesley.edu if this is a mistake."
+        curs.execute('UPDATE appeal \
+                      SET    treasurer=%s, \
+                             explanation=%s \
+                      WHERE  id=%s',
+                     [username, explanation, id])
+    return "Appeal successfully updated."
