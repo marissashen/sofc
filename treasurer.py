@@ -130,8 +130,8 @@ def dupName(conn, orgName, eventName, fundingDeadline):
     return info is not None
 
 # add new event
-def addEvent(conn, username, orgName, eventName, purpose, eventDate, fundingDeadline,
-             eType, students):
+def addEvent(conn, username, orgName, eventName, purpose, eventDate,
+             fundingDeadline, eType, students):
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
 
     # check another event with same name hasn't been made already

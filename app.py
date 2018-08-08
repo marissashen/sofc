@@ -200,7 +200,7 @@ def treasurerOrg(sofc):
                 return redirect(url_for('treasurerEvent',
                                         sofc=sofc,
                                         eventID=eventID))
-            # pureposefully change deadline
+            # purposefully change deadline
             if act == "change":
                 fundingDeadline = request.form['fundingDeadline']
                 session['deadline'] = fundingDeadline
@@ -212,8 +212,11 @@ def treasurerOrg(sofc):
                 eType = request.form['eType']
                 eventDate = request.form['eventDate']
                 students = request.form['students']
-                T.addEvent(conn, username, orgName, eventName, purpose,
-                           eventDate, fundingDeadline, eType, students)
+                message = T.addEvent(conn, username, orgName, eventName,
+                                     purpose, eventDate, fundingDeadline, eType,
+                                     students)
+                if message[0:2] == "An":
+                    pass
             return displayTreasurerOrg(sofc)
     else:
         return redirect(url_for('login'))
